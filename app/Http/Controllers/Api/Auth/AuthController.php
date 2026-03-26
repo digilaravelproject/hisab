@@ -6,109 +6,158 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\OtpVerification;
 use App\Traits\ApiResponseTrait;
-use App\Http\Requests\Auth\OtpLoginRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class AuthController extends Controller
 {
     use ApiResponseTrait;
 
     /**
-     * Step 1: Mobile number se OTP bhejein
+     * POST /api/v1/auth/send-otp
      */
     public function sendOtp(Request $request)
     {
-        $request->validate(['mobile' => 'required|digits:10']);
+        try {
+            $request->validate([
+                'mobile' => 'required|digits:10',
+            ], [
+                'mobile.required' => 'Mobile number is required.',
+                'mobile.digits'   => 'Mobile number must be exactly 10 digits.',
+            ]);
 
-        // $otp = rand(100000, 999999);
-        $otp = 1234;
-        OtpVerification::updateOrCreate(
-            ['mobile' => $request->mobile],
-            [
-                'otp'        => Hash::make($otp),
-                'expires_at' => now()->addMinutes(10),
-            ]
-        );
+            // $otp = rand(1000, 9999);
+            $otp = 1234;
+            OtpVerification::updateOrCreate(
+                ['mobile' => $request->mobile],
+                [
+                    'otp'        => Hash::make($otp),
+                    'expires_at' => now()->addMinutes(10),
+                ]
+            );
 
-        // SMS send karein (Service layer mein)
-        // app(OtpService::class)->send($request->mobile, $otp);
+            // TODO: Send via SMS gateway
+            // SmsService::send($request->mobile, "Your OTP is: {$otp}");
 
-        return $this->successResponse(
-            data: [
-                'expires_in' => 600,
-                'otp'        => $otp
-            ],
-            message: 'OTP sent successfully'
-        );
+            $data = ['expires_in_seconds' => 600];
+
+            if (config('app.debug')) {
+                $data['otp_debug'] = $otp;
+            }
+
+            return $this->successResponse($data, 'OTP sent successfully.');
+        } catch (ValidationException $e) {
+            return $this->errorResponse(
+                $e->errors()[array_key_first($e->errors())][0],
+                $e->errors(),
+                422
+            );
+        } catch (Throwable $e) {
+            return $this->errorResponse(
+                'Something went wrong. Please try again.',
+                config('app.debug') ? $e->getMessage() : null,
+                500
+            );
+        }
     }
 
     /**
-     * Step 2: OTP verify karein aur token return karein
+     * POST /api/v1/auth/verify-otp
      */
-    // public function verifyOtp(Request $request)
-    // {
-    //     $request->validate([
-    //         'mobile' => 'required|digits:10',
-    //         'otp'    => 'required|digits:6',
-    //     ]);
-
-    //     $record = OtpVerification::where('mobile', $request->mobile)
-    //         ->where('expires_at', '>', now())
-    //         ->latest()
-    //         ->first();
-
-    //     if (! $record || ! Hash::check($request->otp, $record->otp)) {
-    //         return $this->errorResponse('Invalid or expired OTP', code: 401);
-    //     }
-
-    //     $record->delete();
-
-    //     $user = User::firstOrCreate(
-    //         ['mobile' => $request->mobile],
-    //         ['name'   => 'User_' . $request->mobile]
-    //     );
-
-    //     $token = $user->createToken('mobile-app')->plainTextToken;
-
-    //     return $this->successResponse([
-    //         'token'       => $token,
-    //         'user'        => $user,
-    //         'is_new_user' => $user->wasRecentlyCreated,
-    //     ], 'Login successful');
-    // }
-
     public function verifyOtp(Request $request)
     {
-        $request->validate([
-            'mobile' => 'required|digits:10',
-            'otp'    => 'required|digits:4',
-        ]);
+        try {
+            $request->validate([
+                'mobile' => 'required|digits:10',
+                'otp'    => 'required|digits:4',
+            ], [
+                'mobile.required' => 'Mobile number is required.',
+                'mobile.digits'   => 'Mobile number must be exactly 10 digits.',
+                'otp.required'    => 'OTP is required.',
+                'otp.digits'      => 'OTP must be exactly 4 digits.',
+            ]);
 
-        $record = OtpVerification::where('mobile', $request->mobile)
-            ->where('expires_at', '>', now())
-            ->latest()
-            ->first();
+            $record = OtpVerification::where('mobile', $request->mobile)
+                ->where('expires_at', '>', now())
+                ->latest()
+                ->first();
 
-        if (! $record || ! Hash::check($request->otp, $record->otp)) {
-            return $this->errorResponse('Invalid or expired OTP', code: 401);
+            if (! $record) {
+                return $this->errorResponse(
+                    'OTP has expired. Please request a new one.',
+                    null,
+                    422
+                );
+            }
+
+            if (! Hash::check($request->otp, $record->otp)) {
+                return $this->errorResponse(
+                    'Invalid OTP. Please try again.',
+                    null,
+                    422
+                );
+            }
+
+            $record->delete();
+
+            $isNewUser = ! User::where('mobile', $request->mobile)->exists();
+
+            $user = User::firstOrCreate(
+                ['mobile' => $request->mobile],
+                ['name'   => '']
+            );
+
+            //$user->tokens()->delete();
+            //$token = $user->createToken('mobile-app')->plainTextToken;
+
+            $message = $isNewUser
+                ? 'Account created successfully. Welcome to Vitai Finance!'
+                : 'Login successful. Welcome back!';
+
+            return $this->successResponse([
+
+                'is_new_user' => $isNewUser,
+                'user'        => [
+                    'id'               => $user->id,
+                    'name'             => $user->name,
+                    'mobile'           => $user->mobile,
+                    'gender'           => $user->gender,
+                    'user_types'       => $user->user_types ?? [],
+                    'reminder_time'    => $user->reminder_time,
+                    'profile_complete' => ! empty($user->name) && ! is_null($user->gender),
+                ],
+            ], $message);
+        } catch (ValidationException $e) {
+            return $this->errorResponse(
+                $e->errors()[array_key_first($e->errors())][0],
+                $e->errors(),
+                422
+            );
+        } catch (Throwable $e) {
+            return $this->errorResponse(
+                'Something went wrong. Please try again.',
+                config('app.debug') ? $e->getMessage() : null,
+                500
+            );
         }
-
-        // OTP matched → delete record
-        $record->delete();
-
-        return $this->successResponse(
-            data: [],
-            message: 'OTP verified successfully'
-        );
     }
 
     /**
-     * Logout
+     * POST /api/v1/auth/logout
      */
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
-        return $this->successResponse(message: 'Logged out successfully');
+        try {
+            $request->user()->currentAccessToken()->delete();
+            return $this->successResponse(null, 'Logged out successfully.');
+        } catch (Throwable $e) {
+            return $this->errorResponse(
+                'Logout failed. Please try again.',
+                config('app.debug') ? $e->getMessage() : null,
+                500
+            );
+        }
     }
 }
