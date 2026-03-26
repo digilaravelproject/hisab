@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\BudgetController;
 use App\Http\Controllers\Api\BillController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ReportController;
-
+use App\Http\Controllers\Api\ProfileController;
 /*
 |--------------------------------------------------------------------------
 | Public Routes (Authentication required nahin)
@@ -30,6 +30,9 @@ Route::prefix('v1')->group(function () {
     */
     Route::middleware('auth:sanctum')->group(function () {
 
+        Route::get('profile',         [ProfileController::class, 'show']);
+        Route::post('profile/update', [ProfileController::class, 'update']);
+        Route::post('profile/user-types', [ProfileController::class, 'updateUserTypes']);
         // Auth
         Route::post('auth/logout', [AuthController::class, 'logout']);
 

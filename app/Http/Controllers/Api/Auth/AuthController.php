@@ -109,15 +109,15 @@ class AuthController extends Controller
                 ['name'   => '']
             );
 
-            //$user->tokens()->delete();
-            //$token = $user->createToken('mobile-app')->plainTextToken;
+            $user->tokens()->delete();
+            $token = $user->createToken('mobile-app')->plainTextToken;
 
             $message = $isNewUser
                 ? 'Account created successfully. Welcome to Vitai Finance!'
                 : 'Login successful. Welcome back!';
 
             return $this->successResponse([
-
+                'token'       => $token,
                 'is_new_user' => $isNewUser,
                 'user'        => [
                     'id'               => $user->id,
