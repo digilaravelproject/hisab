@@ -5,25 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Category extends Model
+class ContactQuery extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
         'name',
-        'type',
-        'icon',
-        'is_active',
+        'email',
+        'subject',
+        'message',
+        'is_resolved',
+        'resolved_at',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'is_resolved' => 'boolean',
+        'resolved_at' => 'datetime',
     ];
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
 }
-

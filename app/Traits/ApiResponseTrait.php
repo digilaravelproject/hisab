@@ -34,16 +34,28 @@ trait ApiResponseTrait
         mixed $data,
         string $message = 'Success'
     ): JsonResponse {
-        return response()->json([
-            'status'  => true,
-            'message' => $message,
-            'data'    => $data->items(),
-            'meta'    => [
+        // $data may be a paginator, or a resource response object from ->response()->getData()
+        if (is_object($data) && method_exists($data, 'items')) {
+            $items = $data->items();
+            $meta = [
                 'current_page' => $data->currentPage(),
                 'last_page'    => $data->lastPage(),
                 'per_page'     => $data->perPage(),
                 'total'        => $data->total(),
-            ],
+            ];
+        } elseif (is_object($data) && property_exists($data, 'data')) {
+            $items = $data->data;
+            $meta = property_exists($data, 'meta') ? (array)$data->meta : [];
+        } else {
+            // fallback to a normal success payload if structure is not paginated
+            return $this->successResponse($data, $message);
+        }
+
+        return response()->json([
+            'status'  => true,
+            'message' => $message,
+            'data'    => $items,
+            'meta'    => $meta,
         ]);
     }
 }

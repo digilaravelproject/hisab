@@ -5,6 +5,8 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\StaticPageController;
+use App\Http\Controllers\Admin\ContactQueryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,18 +48,19 @@ Route::name('admin.')->group(function () {
         ]);
 
         // Transactions
-        Route::prefix('transactions')->name('transactions.')->group(function () {
-            Route::get('/',              [\App\Http\Controllers\Admin\TransactionController::class, 'index'])->name('index');
-            Route::get('/uncategorized', [\App\Http\Controllers\Admin\TransactionController::class, 'uncategorized'])->name('uncategorized');
-        });
+        Route::resource('transactions', \App\Http\Controllers\Admin\TransactionController::class)
+            ->names('transactions');
+        Route::get('transactions/uncategorized', [\App\Http\Controllers\Admin\TransactionController::class, 'uncategorized'])->name('transactions.uncategorized');
 
         // Businesses
         Route::resource('businesses', \App\Http\Controllers\Admin\BusinessController::class)
             ->names('businesses');
+        Route::post('businesses/{id}/toggle', [\App\Http\Controllers\Admin\BusinessController::class, 'toggle'])->name('businesses.toggle');
 
         // Categories
         Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class)
             ->names('categories');
+        Route::post('categories/{id}/toggle', [\App\Http\Controllers\Admin\CategoryController::class, 'toggle'])->name('categories.toggle');
 
         // Budgets
         Route::resource('budgets', \App\Http\Controllers\Admin\BudgetController::class)
@@ -73,6 +76,23 @@ Route::name('admin.')->group(function () {
             Route::get('/yearly',   [ReportController::class, 'yearly'])->name('yearly');
             Route::get('/export',   [ReportController::class, 'export'])->name('export');
         });
+
+        // Static Pages
+        Route::resource('static-pages', StaticPageController::class)->except(['show'])->names([ 
+            'index' => 'static-pages.index',
+            'create' => 'static-pages.create',
+            'store' => 'static-pages.store',
+            'edit' => 'static-pages.edit',
+            'update' => 'static-pages.update',
+            'destroy' => 'static-pages.destroy',
+        ]);
+        Route::post('static-pages/{id}/toggle', [StaticPageController::class, 'toggle'])->name('static-pages.toggle');
+
+        // Contact queries
+        Route::get('contact-queries', [ContactQueryController::class, 'index'])->name('contact-queries.index');
+        Route::get('contact-queries/{id}', [ContactQueryController::class, 'show'])->name('contact-queries.show');
+        Route::post('contact-queries/{id}/status', [ContactQueryController::class, 'updateStatus'])->name('contact-queries.updateStatus');
+        Route::delete('contact-queries/{id}', [ContactQueryController::class, 'destroy'])->name('contact-queries.destroy');
 
         // Settings & Logs
         Route::get('settings', fn() => view('admin.settings.index'))->name('settings');

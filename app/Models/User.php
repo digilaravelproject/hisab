@@ -15,6 +15,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'mobile',
+        'profile_photo',
         'gender',
         'user_types',
         'reminder_time',
@@ -54,5 +55,20 @@ class User extends Authenticatable
     public function bills(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Bill::class);
+    }
+
+    public function settings(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(UserSetting::class);
+    }
+
+    public function settingsOrCreate(): UserSetting
+    {
+        return $this->settings()->firstOrCreate([
+            'user_id' => $this->id,
+        ], [
+            'notifications_enabled' => false,
+            'biometric_enabled'    => false,
+        ]);
     }
 }

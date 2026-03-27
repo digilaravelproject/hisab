@@ -5,25 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Category extends Model
+class StaticPage extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'name',
-        'type',
-        'icon',
+        'slug',
+        'title',
+        'content',
         'is_active',
+        'sort_order',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
     ];
 
-    public function user()
+    public function scopeActive($query)
     {
-        return $this->belongsTo(User::class);
+        return $query->where('is_active', true);
     }
 }
-

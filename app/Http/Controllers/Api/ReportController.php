@@ -260,6 +260,153 @@ class ReportController extends Controller
         );
     }
 
+    /**
+     * GET /api/v1/transactions/download/csv
+     * Download transactions as CSV with optional filters
+     */
+    public function downloadTransactionsCsv(Request $request)
+    {
+        $request->validate([
+            'from_date'   => 'nullable|date_format:Y-m-d',
+            'to_date'     => 'nullable|date_format:Y-m-d',
+            'type'        => 'nullable|in:credit,debit,both',
+            'category_id' => 'nullable|integer|exists:categories,id',
+            'source'      => 'nullable|in:bank,upi,cash',
+        ]);
+
+        $query = Transaction::where('user_id', $request->user()->id)
+            ->with(['category', 'business']);
+
+        if ($request->from_date) {
+            $query->whereDate('transaction_date', '>=', $request->from_date);
+        } else {
+            $query->whereDate('transaction_date', '>=', now()->startOfMonth());
+        }
+
+        if ($request->to_date) {
+            $query->whereDate('transaction_date', '<=', $request->to_date);
+        } else {
+            $query->whereDate('transaction_date', '<=', now()->endOfMonth());
+        }
+
+        if ($request->type && $request->type !== 'both') {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->category_id) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->source) {
+            $query->where('source', $request->source);
+        }
+
+        $transactions = $query->orderBy('transaction_date', 'desc')->get();
+
+        $csv = fopen('php://memory', 'w');
+
+        // Headers
+        fputcsv($csv, [
+            '#',
+            'Date',
+            'Type',
+            'Source',
+            'Amount (₹)',
+            'Category',
+            'Business',
+            'Description',
+            'Reference No',
+        ]);
+
+        // Data rows
+        $i = 0;
+        foreach ($transactions as $txn) {
+            $i++;
+            fputcsv($csv, [
+                $i,
+                $txn->transaction_date?->format('d-m-Y'),
+                strtoupper($txn->type),
+                strtoupper($txn->source),
+                number_format($txn->amount, 2),
+                $txn->category?->name ?? 'Uncategorized',
+                $txn->business?->name ?? '—',
+                $txn->description ?? '—',
+                $txn->reference_no ?? '—',
+            ]);
+        }
+
+        rewind($csv);
+        $content = stream_get_contents($csv);
+        fclose($csv);
+
+        $filename = 'transactions_' . now()->format('Y-m-d_His') . '.csv';
+
+        return response($content, 200)
+            ->header('Content-Type', 'text/csv; charset=UTF-8')
+            ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
+    }
+
+    /**
+     * GET /api/v1/transactions/download/pdf
+     * Download transactions as PDF with optional filters
+     */
+    public function downloadTransactionsPdf(Request $request)
+    {
+        $request->validate([
+            'from_date'   => 'nullable|date_format:Y-m-d',
+            'to_date'     => 'nullable|date_format:Y-m-d',
+            'type'        => 'nullable|in:credit,debit,both',
+            'category_id' => 'nullable|integer|exists:categories,id',
+            'source'      => 'nullable|in:bank,upi,cash',
+        ]);
+
+        $query = Transaction::where('user_id', $request->user()->id)
+            ->with(['category', 'business']);
+
+        if ($request->from_date) {
+            $query->whereDate('transaction_date', '>=', $request->from_date);
+        } else {
+            $query->whereDate('transaction_date', '>=', now()->startOfMonth());
+        }
+
+        if ($request->to_date) {
+            $query->whereDate('transaction_date', '<=', $request->to_date);
+        } else {
+            $query->whereDate('transaction_date', '<=', now()->endOfMonth());
+        }
+
+        if ($request->type && $request->type !== 'both') {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->category_id) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->source) {
+            $query->where('source', $request->source);
+        }
+
+        $transactions = $query->orderBy('transaction_date', 'desc')->get();
+
+        $totalCredit = $transactions->where('type', 'credit')->sum('amount');
+        $totalDebit  = $transactions->where('type', 'debit')->sum('amount');
+
+        $pdf = Pdf::loadView('reports.transactions-pdf', [
+            'transactions' => $transactions,
+            'from_date'    => $request->from_date ?? now()->startOfMonth()->format('d-m-Y'),
+            'to_date'      => $request->to_date ?? now()->endOfMonth()->format('d-m-Y'),
+            'type'         => $request->type ?? 'both',
+            'user'         => $request->user(),
+            'total_credit' => $totalCredit,
+            'total_debit'  => $totalDebit,
+        ])->setPaper('a4', 'landscape');
+
+        $filename = 'transactions_' . now()->format('Y-m-d_His') . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
     // ── Private Helpers ──
 
     private function getMonthSummary(int $userId, int $month, int $year): array

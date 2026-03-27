@@ -13,7 +13,7 @@ class BusinessController extends Controller
 
     /**
      * GET /api/v1/businesses
-     * User ke saare businesses
+     * Fetch all businesses for the authenticated user
      */
     public function index(Request $request)
     {
@@ -46,7 +46,7 @@ class BusinessController extends Controller
 
     /**
      * POST /api/v1/businesses
-     * Naya business create karo
+     * Create a new business
      */
     public function store(Request $request)
     {
@@ -57,33 +57,46 @@ class BusinessController extends Controller
             'standard_expense'  => 'nullable|numeric|min:0',
             'auto_tag'          => 'nullable|boolean',
         ], [
-            'name.required' => 'Business ka naam required hai.',
-            'type.required' => 'Business type required hai.',
-            'type.in'       => 'Type: farm, shop, transport, store, other mein se hona chahiye.',
+            'name.required' => 'Business name is required.',
+            'type.required' => 'Business type is required.',
+            'type.in'       => 'Type must be one of: farm, shop, transport, store, or other.',
         ]);
 
+        // One user can have only one business
+        if (Business::where('user_id', $request->user()->id)->exists()) {
+            return $this->errorResponse(
+                'Your business already exists. Only one business is allowed per user.',
+                null,
+                422
+            );
+        }
+
         $business = Business::create([
-            'user_id'              => $request->user()->id,
-            'name'                 => $validated['name'],
-            'type'                 => $validated['type'],
-            'standard_income'      => $validated['standard_income']  ?? 0,
-            'standard_expense'     => $validated['standard_expense'] ?? 0,
+            'user_id'               => $request->user()->id,
+            'name'                  => $validated['name'],
+            'type'                  => $validated['type'],
+            'standard_income'       => $validated['standard_income']  ?? 0,
+            'standard_expense'      => $validated['standard_expense'] ?? 0,
             'auto_tag_transactions' => $validated['auto_tag'] ?? false,
         ]);
 
-        return $this->successResponse($business, 'Business create ho gaya.', 201);
+        return $this->successResponse(
+            $business,
+            'Business created successfully.',
+            201
+        );
     }
 
     /**
      * GET /api/v1/businesses/{id}
-     * Single business detail
+     * Get single business details
      */
     public function show(Request $request, $id)
     {
         $business = Business::where('user_id', $request->user()->id)
             ->findOrFail($id);
 
-        // Is month ki summary
+        // Current month summary
         $monthlyCredit = $business->transactions()
             ->where('type', 'credit')
             ->whereMonth('transaction_date', now()->month)
@@ -107,16 +120,15 @@ class BusinessController extends Controller
                 'credit'   => (float) $monthlyCredit,
                 'debit'    => (float) $monthlyDebit,
                 'net'      => (float) ($monthlyCredit - $monthlyDebit),
-                // Standard se compare
                 'income_variance'  => (float) ($monthlyCredit - $business->standard_income),
                 'expense_variance' => (float) ($monthlyDebit  - $business->standard_expense),
             ],
-        ], 'Business detail fetched.');
+        ], 'Business details fetched successfully.');
     }
 
     /**
      * PUT /api/v1/businesses/{id}
-     * Business update karo
+     * Update business details
      */
     public function update(Request $request, $id)
     {
@@ -139,11 +151,15 @@ class BusinessController extends Controller
             'auto_tag_transactions' => $validated['auto_tag']         ?? $business->auto_tag_transactions,
         ]);
 
-        return $this->successResponse($business->fresh(), 'Business update ho gaya.');
+        return $this->successResponse(
+            $business->fresh(),
+            'Business updated successfully.'
+        );
     }
 
     /**
      * DELETE /api/v1/businesses/{id}
+     * Delete a business
      */
     public function destroy(Request $request, $id)
     {
@@ -152,6 +168,9 @@ class BusinessController extends Controller
 
         $business->delete();
 
-        return $this->successResponse(null, 'Business delete ho gaya.');
+        return $this->successResponse(
+            null,
+            'Business deleted successfully.'
+        );
     }
 }

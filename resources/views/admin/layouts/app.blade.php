@@ -659,6 +659,18 @@
             {{-- System --}}
             <div class="nav-section-label">System</div>
 
+            <a href="{{ route('admin.static-pages.index') }}"
+                class="nav-item {{ request()->routeIs('admin.static-pages.*') ? 'active' : '' }}">
+                <span class="nav-icon">📄</span>
+                Static Pages
+            </a>
+
+            <a href="{{ route('admin.contact-queries.index') }}"
+                class="nav-item {{ request()->routeIs('admin.contact-queries.*') ? 'active' : '' }}">
+                <span class="nav-icon">✉️</span>
+                Contact Us Enquiries
+            </a>
+
             <a href="{{ route('admin.settings') }}"
                 class="nav-item {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
                 <span class="nav-icon">⚙️</span>
