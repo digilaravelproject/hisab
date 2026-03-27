@@ -28,8 +28,8 @@ class AuthController extends Controller
                 'mobile.digits'   => 'Mobile number must be exactly 10 digits.',
             ]);
 
-            // $otp = rand(1000, 9999);
-            $otp = 1234;
+            $otp = rand(1000, 9999);
+
             OtpVerification::updateOrCreate(
                 ['mobile' => $request->mobile],
                 [
@@ -37,9 +37,6 @@ class AuthController extends Controller
                     'expires_at' => now()->addMinutes(10),
                 ]
             );
-
-            // TODO: Send via SMS gateway
-            // SmsService::send($request->mobile, "Your OTP is: {$otp}");
 
             $data = ['expires_in_seconds' => 600];
 
@@ -65,6 +62,11 @@ class AuthController extends Controller
 
     /**
      * POST /api/v1/auth/verify-otp
+     *
+     * user_status codes:
+     *   1 = New user or profile incomplete  → Go to Profile Screen
+     *   2 = Profile done, user_types missing → Go to User Type Screen
+     *   3 = Everything complete              → Go to Dashboard
      */
     public function verifyOtp(Request $request)
     {
@@ -79,6 +81,7 @@ class AuthController extends Controller
                 'otp.digits'      => 'OTP must be exactly 4 digits.',
             ]);
 
+            // Step 1: OTP record check
             $record = OtpVerification::where('mobile', $request->mobile)
                 ->where('expires_at', '>', now())
                 ->latest()
@@ -100,33 +103,54 @@ class AuthController extends Controller
                 );
             }
 
+            // Step 2: OTP verified — delete
             $record->delete();
 
-            $isNewUser = ! User::where('mobile', $request->mobile)->exists();
-
+            // Step 3: User find or create
             $user = User::firstOrCreate(
                 ['mobile' => $request->mobile],
                 ['name'   => '']
             );
 
-            $user->tokens()->delete();
+            // Step 4: Token generate
+            try {
+                $user->tokens()->delete();
+            } catch (Throwable $e) {
+                // continue even if delete fails
+            }
+
             $token = $user->createToken('mobile-app')->plainTextToken;
 
-            $message = $isNewUser
-                ? 'Account created successfully. Welcome to Vitai Finance!'
-                : 'Login successful. Welcome back!';
+            // Step 5: user_status decide
+            //
+            // 1 → Profile Screen  (new user OR name/gender missing)
+            // 2 → User Type Screen (profile done but user_types empty)
+            // 3 → Dashboard        (everything complete)
+
+            $profileComplete   = ! empty($user->name) && ! is_null($user->gender);
+            $userTypesComplete = ! empty($user->user_types);
+
+            if (! $profileComplete) {
+                $userStatus = 1;
+                $message    = 'Please complete your profile.';
+            } elseif (! $userTypesComplete) {
+                $userStatus = 2;
+                $message    = 'Please select your user type.';
+            } else {
+                $userStatus = 3;
+                $message    = 'Login successful. Welcome back!';
+            }
 
             return $this->successResponse([
                 'token'       => $token,
-                'is_new_user' => $isNewUser,
+                'user_status' => $userStatus,
                 'user'        => [
-                    'id'               => $user->id,
-                    'name'             => $user->name,
-                    'mobile'           => $user->mobile,
-                    'gender'           => $user->gender,
-                    'user_types'       => $user->user_types ?? [],
-                    'reminder_time'    => $user->reminder_time,
-                    'profile_complete' => ! empty($user->name) && ! is_null($user->gender),
+                    'id'            => $user->id,
+                    'name'          => $user->name,
+                    'mobile'        => $user->mobile,
+                    'gender'        => $user->gender,
+                    'user_types'    => $user->user_types ?? [],
+                    'reminder_time' => $user->reminder_time,
                 ],
             ], $message);
         } catch (ValidationException $e) {

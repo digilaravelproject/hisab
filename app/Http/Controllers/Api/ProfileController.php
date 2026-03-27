@@ -17,29 +17,26 @@ class ProfileController extends Controller
      */
     public function show(Request $request)
     {
-        return $this->showWithSettings($request);
-    }
-
-    public function showWithSettings(Request $request)
-    {
         try {
             $user = $request->user();
-            $settings = $user->settings()->firstOrCreate([
-                'user_id' => $user->id,
-            ], [
-                'notifications_enabled' => false,
-                'biometric_enabled'     => false,
-            ]);
+
+            $settings = $user->settings()->firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'notifications_enabled' => false,
+                    'biometric_enabled'     => false,
+                ]
+            );
 
             return $this->successResponse([
                 'user' => [
-                    'id'                   => $user->id,
-                    'name'                 => $user->name,
-                    'mobile'               => $user->mobile,
-                    'gender'               => $user->gender,
-                    'reminder_time'        => $user->reminder_time,
-                    'profile_complete'     => ! empty($user->name) && ! is_null($user->gender),
-                    'settings'             => [
+                    'id'               => $user->id,
+                    'name'             => $user->name,
+                    'mobile'           => $user->mobile,
+                    'gender'           => $user->gender,
+                    'reminder_time'    => $user->reminder_time,
+                    'profile_complete' => ! empty($user->name) && ! is_null($user->gender),
+                    'settings'         => [
                         'notifications_enabled' => $settings->notifications_enabled,
                         'biometric_enabled'     => $settings->biometric_enabled,
                         'pin_set'               => ! is_null($settings->pin_code),
@@ -70,13 +67,13 @@ class ProfileController extends Controller
                 'reminder_time' => 'sometimes|date_format:H:i',
                 'profile_photo' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:5120',
             ], [
-                'name.string'            => 'Name must be a valid string.',
-                'name.max'               => 'Name must not exceed 100 characters.',
-                'gender.in'              => 'Gender must be male, female, or other.',
+                'name.string'               => 'Name must be a valid string.',
+                'name.max'                  => 'Name must not exceed 100 characters.',
+                'gender.in'                 => 'Gender must be male, female, or other.',
                 'reminder_time.date_format' => 'Reminder time must be in HH:MM format (e.g. 08:30).',
-                'profile_photo.image'    => 'Profile photo must be an image file.',
-                'profile_photo.mimes'    => 'Profile photo must be jpeg,png,jpg,gif.',
-                'profile_photo.max'      => 'Profile photo must not exceed 5MB.',
+                'profile_photo.image'       => 'Profile photo must be an image file.',
+                'profile_photo.mimes'       => 'Profile photo must be jpeg, png, jpg, or gif.',
+                'profile_photo.max'         => 'Profile photo must not exceed 5MB.',
             ]);
 
             $user = $request->user();
@@ -88,18 +85,19 @@ class ProfileController extends Controller
             ], fn($value) => ! is_null($value));
 
             if ($request->hasFile('profile_photo')) {
-                $path = $request->file('profile_photo')->store('profile_photos', 'public');
+                $path         = $request->file('profile_photo')->store('profile_photos', 'public');
                 $data['profile_photo'] = $path;
             }
 
             $user->update($data);
 
-            $settings = $user->settings()->firstOrCreate([
-                'user_id' => $user->id,
-            ], [
-                'notifications_enabled' => false,
-                'biometric_enabled'     => false,
-            ]);
+            $settings = $user->settings()->firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'notifications_enabled' => false,
+                    'biometric_enabled'     => false,
+                ]
+            );
 
             return $this->successResponse([
                 'user' => [
@@ -108,7 +106,9 @@ class ProfileController extends Controller
                     'mobile'           => $user->mobile,
                     'gender'           => $user->gender,
                     'reminder_time'    => $user->reminder_time,
-                    'profile_photo'    => $user->profile_photo ? asset('storage/'.$user->profile_photo) : null,
+                    'profile_photo'    => $user->profile_photo
+                        ? asset('storage/' . $user->profile_photo)
+                        : null,
                     'profile_complete' => ! empty($user->name) && ! is_null($user->gender),
                     'settings'         => [
                         'notifications_enabled' => $settings->notifications_enabled,
@@ -134,6 +134,10 @@ class ProfileController extends Controller
             );
         }
     }
+
+    /**
+     * POST /api/v1/profile/update-user-types
+     */
     public function updateUserTypes(Request $request)
     {
         try {

@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\HasApiTokens; // ← MOST IMPORTANT LINE
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes; // ← HasApiTokens first
 
     protected $fillable = [
         'name',
@@ -29,14 +29,13 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'user_types'   => 'array',    // JSON column auto cast
-            'is_active'    => 'boolean',
-            'is_admin'     => 'boolean',
+            'user_types' => 'array',
+            'is_active'  => 'boolean',
+            'is_admin'   => 'boolean',
         ];
     }
 
     // ── Relationships ──
-
     public function transactions(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Transaction::class);
