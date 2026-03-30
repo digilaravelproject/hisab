@@ -297,7 +297,7 @@
                                   : 'text-white/65 hover:text-white hover:bg-white/7' }}">
                         All Transactions
                     </a>
-                    <a href="{{ route('admin.transactions.uncategorized') }}"
+                    <?php /*<a href="{{ route('admin.transactions.uncategorized') }}"
                         class="relative flex items-center gap-3 pl-[3.8rem] pr-6 py-[8px] text-[13px]
                               no-underline transition-all duration-150
                               {{ request()->routeIs('admin.transactions.uncategorized')
@@ -307,7 +307,7 @@
                         <span
                             class="ml-auto bg-amber-500 text-white text-[10px] font-bold
                                      px-2 py-[2px] rounded-full">!</span>
-                    </a>
+                    </a>*/ ?>
                 </div>
             </div>
 
@@ -317,7 +317,7 @@
                         text-white/30 px-6 pt-4 pb-1">
                 Finance</div>
 
-            @foreach ([['route' => 'admin.businesses.index', 'icon' => '🏪', 'label' => 'Businesses'], ['route' => 'admin.categories.index', 'icon' => '🏷️', 'label' => 'Categories'], ['route' => 'admin.budgets.index', 'icon' => '📊', 'label' => 'Budgets'], ['route' => 'admin.bills.index', 'icon' => '🧾', 'label' => 'Bills']] as $item)
+            @foreach ([['route' => 'admin.businesses.index', 'icon' => '🏪', 'label' => 'Businesses'], ['route' => 'admin.categories.index', 'icon' => '🏷️', 'label' => 'Categories'], ['route' => 'admin.budgets.index', 'icon' => '📊', 'label' => 'Budgets']] as $item)
                 <a href="{{ route($item['route']) }}"
                     class="nav-item relative flex items-center gap-3 px-6 py-[9px] text-[13.5px]
                       no-underline transition-all duration-150
@@ -353,7 +353,7 @@
                         text-white/30 px-6 pt-4 pb-1">
                 System</div>
 
-            @foreach ([['route' => 'admin.static-pages.index', 'icon' => '📄', 'label' => 'Static Pages'], ['route' => 'admin.contact-queries.index', 'icon' => '✉️', 'label' => 'Contact Enquiries'], ['route' => 'admin.settings', 'icon' => '⚙️', 'label' => 'Settings'], ['route' => 'admin.logs', 'icon' => '📋', 'label' => 'Activity Logs']] as $item)
+            @foreach ([['route' => 'admin.static-pages.index', 'icon' => '📄', 'label' => 'Static Pages'], ['route' => 'admin.contact-queries.index', 'icon' => '✉️', 'label' => 'Contact Enquiries'], ['route' => 'admin.settings', 'icon' => '⚙️', 'label' => 'Settings']] as $item)
                 <a href="{{ route($item['route']) }}"
                     class="nav-item relative flex items-center gap-3 px-6 py-[9px] text-[13.5px]
                       no-underline transition-all duration-150

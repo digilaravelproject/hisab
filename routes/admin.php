@@ -77,6 +77,8 @@ Route::name('admin.')->group(function () {
             Route::get('/monthly',  [ReportController::class, 'monthly'])->name('monthly');
             Route::get('/yearly',   [ReportController::class, 'yearly'])->name('yearly');
             Route::get('/export',   [ReportController::class, 'export'])->name('export');
+            Route::get('/export/pdf',   [ReportController::class, 'exportPdf'])->name('export.pdf');
+            Route::get('/export/excel', [ReportController::class, 'exportExcel'])->name('export.excel');
         });
 
         // Static Pages
@@ -97,7 +99,8 @@ Route::name('admin.')->group(function () {
         Route::delete('contact-queries/{id}', [ContactQueryController::class, 'destroy'])->name('contact-queries.destroy');
 
         // Settings & Logs
-        Route::get('settings', fn() => view('admin.settings.index'))->name('settings');
+        Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings');
+        Route::post('settings/{id}', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
         Route::get('logs',     fn() => view('admin.logs.index'))->name('logs');
     });
 });

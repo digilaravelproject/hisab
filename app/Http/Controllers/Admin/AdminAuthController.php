@@ -42,7 +42,7 @@ class AdminAuthController extends Controller
 
         return back()
             ->withInput($request->only('email'))
-            ->withErrors(['email' => 'Email ya password galat hai.']);
+            ->withErrors(['email' => 'Wrong email or password']);
     }
 
     /**
@@ -57,6 +57,6 @@ class AdminAuthController extends Controller
 
         return redirect()
             ->route('admin.login')
-            ->with('success', 'Aap successfully logout ho gaye hain.');
+            ->with('success', 'You have been successfully logged out.');
     }
 }
