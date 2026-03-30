@@ -28,6 +28,8 @@ Route::name('admin.')->group(function () {
 
     // ── Protected (login required) ──────────────────────────────────────
     Route::middleware('admin')->group(function () {
+        Route::patch('users/{id}/toggle-status', [UserManagementController::class, 'toggleStatus'])
+            ->name('users.toggle-status');
 
         // Logout
         Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
@@ -78,7 +80,7 @@ Route::name('admin.')->group(function () {
         });
 
         // Static Pages
-        Route::resource('static-pages', StaticPageController::class)->except(['show'])->names([ 
+        Route::resource('static-pages', StaticPageController::class)->except(['show'])->names([
             'index' => 'static-pages.index',
             'create' => 'static-pages.create',
             'store' => 'static-pages.store',

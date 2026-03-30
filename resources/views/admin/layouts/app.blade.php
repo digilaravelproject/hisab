@@ -6,168 +6,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') — Vitai Admin</title>
+
+    {{-- Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet">
+
+    {{-- Tailwind CSS CDN --}}
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    {{-- DataTables CSS --}}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+
+    {{-- jQuery --}}
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            DEFAULT: '#1B3A6B',
+                            light: '#2D5499',
+                            dark: '#0D2454',
+                            xlight: '#EEF2FA',
+                        }
+                    },
+                    fontFamily: {
+                        sora: ['Sora', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        :root {
-            --primary: #1B3A6B;
-            --primary-light: #2D5499;
-            --primary-dark: #0D2454;
-            --primary-xlight: #EEF2FA;
-            --bg: #F0F4F8;
-            --surface: #FFFFFF;
-            --surface-2: #F8FAFC;
-            --text-primary: #1B3A6B;
-            --text-secondary: #6B7280;
-            --text-muted: #9CA3AF;
-            --border: #E5EAF2;
-            --success: #16A34A;
-            --success-bg: #F0FDF4;
-            --danger: #DC2626;
-            --danger-bg: #FEF2F2;
-            --warning: #D97706;
-            --warning-bg: #FFFBEB;
-            --info: #2563EB;
-            --info-bg: #EFF6FF;
-            --sidebar-w: 260px;
-        }
-
         body {
             font-family: 'Sora', sans-serif;
-            background: var(--bg);
-            color: var(--text-primary);
-            display: flex;
-            min-height: 100vh;
-            font-size: 14px;
         }
 
-        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ SIDEBAR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        .sidebar {
-            width: var(--sidebar-w);
-            min-height: 100vh;
-            background: var(--primary);
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            z-index: 100;
-            transition: transform 0.3s ease;
+        /* Sidebar scrollbar */
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
         }
 
-        .sidebar-brand {
-            padding: 1.4rem 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .sidebar-brand .icon {
-            width: 38px;
-            height: 38px;
-            background: rgba(255, 255, 255, 0.13);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 17px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            flex-shrink: 0;
-        }
-
-        .sidebar-brand .name {
-            font-size: 16px;
-            font-weight: 700;
-            color: #fff;
-            letter-spacing: -0.2px;
-        }
-
-        .sidebar-brand .sub {
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.4);
-            font-family: 'JetBrains Mono', monospace;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-        }
-
-        /* Nav */
-        .sidebar-nav {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem 0;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-        }
-
-        .nav-section-label {
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.3);
-            padding: 0.8rem 1.5rem 0.4rem;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: 0.6rem 1.5rem;
-            color: rgba(255, 255, 255, 0.65);
-            text-decoration: none;
-            font-size: 13.5px;
-            font-weight: 400;
-            transition: all 0.15s;
-            position: relative;
-            border-radius: 0;
-            margin: 1px 0;
-        }
-
-        .nav-item .nav-icon {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            font-size: 15px;
-            flex-shrink: 0;
+        .sidebar-nav::-webkit-scrollbar-track {
             background: transparent;
-            transition: all 0.15s;
         }
 
-        .nav-item:hover {
-            color: #fff;
-            background: rgba(255, 255, 255, 0.07);
-        }
-
-        .nav-item:hover .nav-icon {
+        .sidebar-nav::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
         }
 
-        .nav-item.active {
-            color: #fff;
-            background: rgba(255, 255, 255, 0.12);
-        }
-
-        .nav-item.active .nav-icon {
-            background: rgba(255, 255, 255, 0.18);
-        }
-
-        .nav-item.active::before {
+        /* Active nav indicator */
+        .nav-active::before {
             content: '';
             position: absolute;
             left: 0;
@@ -178,607 +75,473 @@
             border-radius: 0 3px 3px 0;
         }
 
-        .nav-badge {
-            margin-left: auto;
-            background: var(--danger);
-            color: #fff;
-            font-size: 10px;
-            font-weight: 600;
-            padding: 2px 7px;
-            border-radius: 10px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .nav-badge.success {
-            background: var(--success);
-        }
-
-        .nav-badge.warning {
-            background: var(--warning);
-        }
-
-        /* Submenu */
-        .nav-submenu {
+        /* Submenu transition */
+        .submenu {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.25s ease;
         }
 
-        .nav-submenu.open {
+        .submenu.open {
             max-height: 300px;
         }
 
-        .nav-submenu .nav-item {
-            padding-left: 3.8rem;
-            font-size: 13px;
-        }
-
-        .nav-parent .arrow {
-            margin-left: auto;
-            font-size: 11px;
+        .arrow-icon {
             transition: transform 0.2s;
-            opacity: 0.5;
         }
 
-        .nav-parent.open .arrow {
+        .nav-parent.open .arrow-icon {
             transform: rotate(90deg);
         }
 
-        /* Sidebar Footer */
-        .sidebar-footer {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .admin-profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .admin-avatar {
-            width: 36px;
-            height: 36px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 600;
-            color: #fff;
-            border: 1.5px solid rgba(255, 255, 255, 0.2);
-            flex-shrink: 0;
-        }
-
-        .admin-info .name {
-            font-size: 13px;
-            font-weight: 600;
-            color: #fff;
-        }
-
-        .admin-info .role {
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.4);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .logout-btn {
-            margin-left: auto;
-            width: 30px;
-            height: 30px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.6);
-            transition: all 0.15s;
-            text-decoration: none;
-        }
-
-        .logout-btn:hover {
-            background: rgba(220, 38, 38, 0.3);
-            border-color: rgba(220, 38, 38, 0.4);
-            color: #fff;
-        }
-
-        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ MAIN CONTENT ━━━━━━━━━━━━━━━━━━━━━━━ */
-        .main-wrapper {
-            margin-left: var(--sidebar-w);
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* Top Header */
-        .topbar {
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            padding: 0 1.5rem;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .topbar-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-        }
-
-        .sidebar-toggle {
-            width: 34px;
-            height: 34px;
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
-            background: transparent;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 4px;
-            padding: 8px;
-            transition: all 0.15s;
-        }
-
-        .sidebar-toggle span {
-            display: block;
-            width: 100%;
-            height: 1.5px;
-            background: var(--text-secondary);
-            border-radius: 2px;
-            transition: all 0.2s;
-        }
-
-        .sidebar-toggle:hover {
-            background: var(--bg);
-        }
-
-        .page-breadcrumb {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .page-breadcrumb .current {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        /* Search */
-        .topbar-search {
-            position: relative;
-            width: 240px;
-        }
-
-        .topbar-search input {
-            width: 100%;
-            padding: 0.45rem 1rem 0.45rem 2.2rem;
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
+        /* ── DataTables Custom Styles ── */
+        .dataTables_wrapper {
             font-family: 'Sora', sans-serif;
             font-size: 13px;
-            background: var(--bg);
-            color: var(--text-primary);
+        }
+
+        /* Search & Length */
+        .dataTables_wrapper .dataTables_filter input {
+            border: 1.5px solid #E5EAF2;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-family: 'Sora', sans-serif;
+            font-size: 13px;
             outline: none;
-            transition: all 0.2s;
+            transition: border-color 0.2s;
+            margin-left: 6px;
         }
 
-        .topbar-search input:focus {
-            border-color: var(--primary);
-            background: var(--surface);
+        .dataTables_wrapper .dataTables_filter input:focus {
+            border-color: #1B3A6B;
         }
 
-        .topbar-search .search-icon {
-            position: absolute;
-            left: 9px;
-            top: 50%;
-            transform: translateY(-50%);
+        .dataTables_wrapper .dataTables_length select {
+            border: 1.5px solid #E5EAF2;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-family: 'Sora', sans-serif;
             font-size: 13px;
-            color: var(--text-muted);
+            outline: none;
+            margin: 0 6px;
         }
 
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        /* Table */
+        table.dataTable {
+            width: 100% !important;
+            border-collapse: collapse !important;
         }
 
-        .topbar-btn {
-            position: relative;
-            width: 36px;
-            height: 36px;
-            border: 1.5px solid var(--border);
-            border-radius: 9px;
-            background: transparent;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            color: var(--text-secondary);
-            transition: all 0.15s;
-            text-decoration: none;
-        }
-
-        .topbar-btn:hover {
-            background: var(--bg);
-            color: var(--primary);
-        }
-
-        .notif-dot {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 8px;
-            height: 8px;
-            background: var(--danger);
-            border-radius: 50%;
-            border: 2px solid var(--surface);
-        }
-
-        /* Page Content */
-        .page-content {
-            flex: 1;
-            padding: 1.5rem;
-        }
-
-        .page-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
-        }
-
-        .page-header h1 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: -0.3px;
-        }
-
-        .page-header p {
-            color: var(--text-secondary);
-            font-size: 13px;
-            margin-top: 3px;
-        }
-
-        /* Alerts */
-        .alert {
-            padding: 0.75rem 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            font-size: 13.5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .alert-success {
-            background: var(--success-bg);
-            color: var(--success);
-            border: 1px solid #BBF7D0;
-        }
-
-        .alert-error {
-            background: var(--danger-bg);
-            color: var(--danger);
-            border: 1px solid #FECACA;
-        }
-
-        .alert-warning {
-            background: var(--warning-bg);
-            color: var(--warning);
-            border: 1px solid #FDE68A;
-        }
-
-        .alert-info {
-            background: var(--info-bg);
-            color: var(--info);
-            border: 1px solid #BFDBFE;
-        }
-
-        /* Footer */
-        .page-footer {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid var(--border);
-            background: var(--surface);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        table.dataTable thead th {
+            background: #EEF2FA;
+            color: #1B3A6B;
+            font-weight: 600;
             font-size: 12px;
-            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 12px 16px !important;
+            border-bottom: 2px solid #E5EAF2 !important;
+            border-top: none !important;
+            white-space: nowrap;
         }
 
-        .footer-right {
-            font-family: 'JetBrains Mono', monospace;
+        table.dataTable thead th.sorting::after,
+        table.dataTable thead th.sorting_asc::after,
+        table.dataTable thead th.sorting_desc::after {
+            opacity: 0.5;
         }
 
-        /* Mobile */
-        .overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 99;
+        table.dataTable tbody td {
+            padding: 13px 16px !important;
+            border-bottom: 1px solid #F4F6FB !important;
+            vertical-align: middle;
+            color: #1B3A6B;
+            font-size: 13.5px;
         }
 
-        @media (max-width: 900px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .main-wrapper {
-                margin-left: 0;
-            }
-
-            .overlay.show {
-                display: block;
-            }
-
-            .topbar-search {
-                width: 160px;
-            }
+        table.dataTable tbody tr:hover td {
+            background: #F8FAFC;
         }
 
-        @media (max-width: 600px) {
-            .topbar-search {
-                display: none;
-            }
+        table.dataTable tbody tr:last-child td {
+            border-bottom: none !important;
+        }
 
-            .page-content {
-                padding: 1rem;
-            }
+        /* Pagination */
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 4px 10px !important;
+            border-radius: 7px !important;
+            border: 1.5px solid #E5EAF2 !important;
+            margin: 0 2px !important;
+            font-size: 12px !important;
+            color: #1B3A6B !important;
+            background: #fff !important;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: #EEF2FA !important;
+            border-color: #1B3A6B !important;
+            color: #1B3A6B !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #1B3A6B !important;
+            border-color: #1B3A6B !important;
+            color: #fff !important;
+            font-weight: 600;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Info text */
+        .dataTables_wrapper .dataTables_info {
+            font-size: 12.5px;
+            color: #6B7280;
+            padding-top: 10px !important;
+        }
+
+        /* Top/Bottom row */
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_length {
+            padding: 12px 16px;
+        }
+
+        .dataTables_wrapper .dataTables_paginate {
+            padding: 10px 16px;
         }
     </style>
+
     @stack('styles')
 </head>
 
-<body>
+<body class="bg-[#F0F4F8] text-navy min-h-screen flex">
 
     {{-- Mobile Overlay --}}
-    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+    <div id="overlay" onclick="closeSidebar()" class="hidden fixed inset-0 bg-black/50 z-[99] lg:hidden"></div>
 
-    {{-- ━━━━━━━━━━━━━━ SIDEBAR ━━━━━━━━━━━━━━ --}}
-    <aside class="sidebar" id="sidebar">
+    {{-- ━━━━━━━━ SIDEBAR ━━━━━━━━ --}}
+    <aside id="sidebar"
+        class="fixed left-0 top-0 bottom-0 w-[260px] bg-navy flex flex-col z-[100]
+                  -translate-x-full lg:translate-x-0 transition-transform duration-300">
 
         {{-- Brand --}}
-        <div class="sidebar-brand">
-            <div class="icon">💰</div>
+        <div class="flex items-center gap-3 px-6 py-5 border-b border-white/10">
+            <div
+                class="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center
+                        text-lg border border-white/20 shrink-0">
+                💰</div>
             <div>
-                <div class="name">Vitai Finance</div>
-                <div class="sub">Admin Portal</div>
+                <div class="text-white font-bold text-[15px]">Vitai Finance</div>
+                <div class="text-white/40 text-[10px] font-mono tracking-widest uppercase">Admin Portal</div>
             </div>
         </div>
 
-        {{-- Navigation --}}
-        <nav class="sidebar-nav">
+        {{-- Nav --}}
+        <nav class="sidebar-nav flex-1 overflow-y-auto py-3">
 
-            {{-- Main --}}
-            <div class="nav-section-label">Main</div>
+            <div
+                class="text-[10px] font-mono font-semibold tracking-widest uppercase
+                        text-white/30 px-6 pt-3 pb-1">
+                Main</div>
 
             <a href="{{ route('admin.dashboard') }}"
-                class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                <span class="nav-icon">🏠</span>
+                class="nav-item relative flex items-center gap-3 px-6 py-[9px] text-[13.5px]
+                      no-underline transition-all duration-150
+                      {{ request()->routeIs('admin.dashboard')
+                          ? 'text-white bg-white/12 nav-active'
+                          : 'text-white/65 hover:text-white hover:bg-white/7' }}">
+                <span
+                    class="w-8 h-8 flex items-center justify-center rounded-lg
+                             {{ request()->routeIs('admin.dashboard') ? 'bg-white/18' : 'hover:bg-white/10' }}">🏠</span>
                 Dashboard
             </a>
 
             <a href="{{ route('admin.users.index') }}"
-                class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                <span class="nav-icon">👥</span>
+                class="nav-item relative flex items-center gap-3 px-6 py-[9px] text-[13.5px]
+                      no-underline transition-all duration-150
+                      {{ request()->routeIs('admin.users.*')
+                          ? 'text-white bg-white/12 nav-active'
+                          : 'text-white/65 hover:text-white hover:bg-white/7' }}">
+                <span class="w-8 h-8 flex items-center justify-center rounded-lg">👥</span>
                 Users
-                <span class="nav-badge">{{ \App\Models\User::count() }}</span>
+                <span
+                    class="ml-auto bg-red-500 text-white text-[10px] font-bold
+                             px-2 py-[2px] rounded-full font-mono">
+                    {{ \App\Models\User::count() }}
+                </span>
             </a>
 
-            {{-- Transactions (with submenu) --}}
+            {{-- Transactions submenu --}}
             <div>
-                <a class="nav-item nav-parent {{ request()->routeIs('admin.transactions.*') ? 'active open' : '' }}"
-                    onclick="toggleSubmenu(this)" style="cursor:pointer;">
-                    <span class="nav-icon">💳</span>
+                <a class="nav-parent relative flex items-center gap-3 px-6 py-[9px] text-[13.5px]
+                          cursor-pointer no-underline transition-all duration-150
+                          {{ request()->routeIs('admin.transactions.*')
+                              ? 'text-white bg-white/12 nav-active open'
+                              : 'text-white/65 hover:text-white hover:bg-white/7' }}"
+                    onclick="toggleSubmenu(this)">
+                    <span class="w-8 h-8 flex items-center justify-center rounded-lg">💳</span>
                     Transactions
-                    <span class="arrow">▶</span>
+                    <span class="arrow-icon ml-auto text-[11px] opacity-50">▶</span>
                 </a>
-                <div class="nav-submenu {{ request()->routeIs('admin.transactions.*') ? 'open' : '' }}">
+                <div class="submenu {{ request()->routeIs('admin.transactions.*') ? 'open' : '' }}">
                     <a href="{{ route('admin.transactions.index') }}"
-                        class="nav-item {{ request()->routeIs('admin.transactions.index') ? 'active' : '' }}">
+                        class="relative flex items-center gap-3 pl-[3.8rem] pr-6 py-[8px] text-[13px]
+                              no-underline transition-all duration-150
+                              {{ request()->routeIs('admin.transactions.index')
+                                  ? 'text-white bg-white/12 nav-active'
+                                  : 'text-white/65 hover:text-white hover:bg-white/7' }}">
                         All Transactions
                     </a>
                     <a href="{{ route('admin.transactions.uncategorized') }}"
-                        class="nav-item {{ request()->routeIs('admin.transactions.uncategorized') ? 'active' : '' }}">
+                        class="relative flex items-center gap-3 pl-[3.8rem] pr-6 py-[8px] text-[13px]
+                              no-underline transition-all duration-150
+                              {{ request()->routeIs('admin.transactions.uncategorized')
+                                  ? 'text-white bg-white/12 nav-active'
+                                  : 'text-white/65 hover:text-white hover:bg-white/7' }}">
                         Uncategorized
-                        <span class="nav-badge warning">!</span>
+                        <span
+                            class="ml-auto bg-amber-500 text-white text-[10px] font-bold
+                                     px-2 py-[2px] rounded-full">!</span>
                     </a>
                 </div>
             </div>
 
             {{-- Finance --}}
-            <div class="nav-section-label">Finance</div>
+            <div
+                class="text-[10px] font-mono font-semibold tracking-widest uppercase
+                        text-white/30 px-6 pt-4 pb-1">
+                Finance</div>
 
-            <a href="{{ route('admin.businesses.index') }}"
-                class="nav-item {{ request()->routeIs('admin.businesses.*') ? 'active' : '' }}">
-                <span class="nav-icon">🏪</span>
-                Businesses
-            </a>
-
-            <a href="{{ route('admin.categories.index') }}"
-                class="nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
-                <span class="nav-icon">🏷️</span>
-                Categories
-            </a>
-
-            <a href="{{ route('admin.budgets.index') }}"
-                class="nav-item {{ request()->routeIs('admin.budgets.*') ? 'active' : '' }}">
-                <span class="nav-icon">📊</span>
-                Budgets
-            </a>
-
-            <a href="{{ route('admin.bills.index') }}"
-                class="nav-item {{ request()->routeIs('admin.bills.*') ? 'active' : '' }}">
-                <span class="nav-icon">🧾</span>
-                Bills
-            </a>
+            @foreach ([['route' => 'admin.businesses.index', 'icon' => '🏪', 'label' => 'Businesses'], ['route' => 'admin.categories.index', 'icon' => '🏷️', 'label' => 'Categories'], ['route' => 'admin.budgets.index', 'icon' => '📊', 'label' => 'Budgets'], ['route' => 'admin.bills.index', 'icon' => '🧾', 'label' => 'Bills']] as $item)
+                <a href="{{ route($item['route']) }}"
+                    class="nav-item relative flex items-center gap-3 px-6 py-[9px] text-[13.5px]
+                      no-underline transition-all duration-150
+                      {{ request()->routeIs(str_replace('.index', '.*', $item['route']))
+                          ? 'text-white bg-white/12 nav-active'
+                          : 'text-white/65 hover:text-white hover:bg-white/7' }}">
+                    <span class="w-8 h-8 flex items-center justify-center rounded-lg">{{ $item['icon'] }}</span>
+                    {{ $item['label'] }}
+                </a>
+            @endforeach
 
             {{-- Reports --}}
-            <div class="nav-section-label">Reports</div>
+            <div
+                class="text-[10px] font-mono font-semibold tracking-widest uppercase
+                        text-white/30 px-6 pt-4 pb-1">
+                Reports</div>
 
-            <a href="{{ route('admin.reports.monthly') }}"
-                class="nav-item {{ request()->routeIs('admin.reports.monthly') ? 'active' : '' }}">
-                <span class="nav-icon">📅</span>
-                Monthly Report
-            </a>
-
-            <a href="{{ route('admin.reports.yearly') }}"
-                class="nav-item {{ request()->routeIs('admin.reports.yearly') ? 'active' : '' }}">
-                <span class="nav-icon">📈</span>
-                Yearly Report
-            </a>
-
-            <a href="{{ route('admin.reports.export') }}"
-                class="nav-item {{ request()->routeIs('admin.reports.export') ? 'active' : '' }}">
-                <span class="nav-icon">📤</span>
-                Export Data
-            </a>
+            @foreach ([['route' => 'admin.reports.monthly', 'icon' => '📅', 'label' => 'Monthly Report'], ['route' => 'admin.reports.yearly', 'icon' => '📈', 'label' => 'Yearly Report'], ['route' => 'admin.reports.export', 'icon' => '📤', 'label' => 'Export Data']] as $item)
+                <a href="{{ route($item['route']) }}"
+                    class="nav-item relative flex items-center gap-3 px-6 py-[9px] text-[13.5px]
+                      no-underline transition-all duration-150
+                      {{ request()->routeIs($item['route'])
+                          ? 'text-white bg-white/12 nav-active'
+                          : 'text-white/65 hover:text-white hover:bg-white/7' }}">
+                    <span class="w-8 h-8 flex items-center justify-center rounded-lg">{{ $item['icon'] }}</span>
+                    {{ $item['label'] }}
+                </a>
+            @endforeach
 
             {{-- System --}}
-            <div class="nav-section-label">System</div>
+            <div
+                class="text-[10px] font-mono font-semibold tracking-widest uppercase
+                        text-white/30 px-6 pt-4 pb-1">
+                System</div>
 
-            <a href="{{ route('admin.static-pages.index') }}"
-                class="nav-item {{ request()->routeIs('admin.static-pages.*') ? 'active' : '' }}">
-                <span class="nav-icon">📄</span>
-                Static Pages
-            </a>
-
-            <a href="{{ route('admin.contact-queries.index') }}"
-                class="nav-item {{ request()->routeIs('admin.contact-queries.*') ? 'active' : '' }}">
-                <span class="nav-icon">✉️</span>
-                Contact Us Enquiries
-            </a>
-
-            <a href="{{ route('admin.settings') }}"
-                class="nav-item {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
-                <span class="nav-icon">⚙️</span>
-                Settings
-            </a>
-
-            <a href="{{ route('admin.logs') }}"
-                class="nav-item {{ request()->routeIs('admin.logs') ? 'active' : '' }}">
-                <span class="nav-icon">📋</span>
-                Activity Logs
-            </a>
+            @foreach ([['route' => 'admin.static-pages.index', 'icon' => '📄', 'label' => 'Static Pages'], ['route' => 'admin.contact-queries.index', 'icon' => '✉️', 'label' => 'Contact Enquiries'], ['route' => 'admin.settings', 'icon' => '⚙️', 'label' => 'Settings'], ['route' => 'admin.logs', 'icon' => '📋', 'label' => 'Activity Logs']] as $item)
+                <a href="{{ route($item['route']) }}"
+                    class="nav-item relative flex items-center gap-3 px-6 py-[9px] text-[13.5px]
+                      no-underline transition-all duration-150
+                      {{ request()->routeIs($item['route'])
+                          ? 'text-white bg-white/12 nav-active'
+                          : 'text-white/65 hover:text-white hover:bg-white/7' }}">
+                    <span class="w-8 h-8 flex items-center justify-center rounded-lg">{{ $item['icon'] }}</span>
+                    {{ $item['label'] }}
+                </a>
+            @endforeach
 
         </nav>
 
         {{-- Admin Profile --}}
-        <div class="sidebar-footer">
-            <div class="admin-profile">
-                <div class="admin-avatar">
+        <div class="px-6 py-4 border-t border-white/10">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-9 h-9 bg-white/15 rounded-full flex items-center justify-center
+                            text-white font-semibold text-[13px] border border-white/20 shrink-0">
                     {{ strtoupper(substr(auth('admin')->user()->name ?? 'A', 0, 1)) }}
                 </div>
-                <div class="admin-info">
-                    <div class="name">{{ auth('admin')->user()->name ?? 'Admin' }}</div>
-                    <div class="role">SUPER ADMIN</div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-white text-[13px] font-semibold truncate">
+                        {{ auth('admin')->user()->name ?? 'Admin' }}
+                    </div>
+                    <div class="text-white/40 text-[10px] font-mono uppercase tracking-wide">Super Admin</div>
                 </div>
                 <form method="POST" action="{{ route('admin.logout') }}">
                     @csrf
-                    <button type="submit" class="logout-btn" title="Logout">🚪</button>
+                    <button type="submit"
+                        class="w-8 h-8 bg-white/8 border border-white/10 rounded-lg flex items-center
+                                   justify-center text-white/60 cursor-pointer text-sm transition-all
+                                   hover:bg-red-500/30 hover:border-red-400/40 hover:text-white">
+                        🚪
+                    </button>
                 </form>
             </div>
         </div>
 
     </aside>
 
-    {{-- ━━━━━━━━━━━━━━ MAIN WRAPPER ━━━━━━━━━━━━━━ --}}
-    <div class="main-wrapper">
+    {{-- ━━━━━━━━ MAIN WRAPPER ━━━━━━━━ --}}
+    <div class="lg:ml-[260px] flex-1 flex flex-col min-h-screen">
 
         {{-- Topbar --}}
-        <header class="topbar">
-            <div class="topbar-left">
-                <button class="sidebar-toggle" onclick="toggleSidebar()">
-                    <span></span><span></span><span></span>
+        <header
+            class="bg-white border-b border-[#E5EAF2] h-[60px] flex items-center
+                       gap-4 px-6 sticky top-0 z-50">
+
+            {{-- Left --}}
+            <div class="flex items-center gap-3 flex-1">
+                <button onclick="toggleSidebar()"
+                    class="w-9 h-9 border border-[#E5EAF2] rounded-lg bg-transparent cursor-pointer
+                               flex flex-col items-center justify-center gap-[4px] p-2 hover:bg-[#F0F4F8]
+                               transition-all lg:hidden">
+                    <span class="block w-full h-[1.5px] bg-gray-500 rounded"></span>
+                    <span class="block w-full h-[1.5px] bg-gray-500 rounded"></span>
+                    <span class="block w-full h-[1.5px] bg-gray-500 rounded"></span>
                 </button>
-                <div class="page-breadcrumb">
+
+                <div class="flex items-center gap-2 text-[13px] text-gray-500">
                     <span>Admin</span>
                     <span>›</span>
-                    <span class="current">@yield('breadcrumb', 'Dashboard')</span>
+                    <span class="text-navy font-semibold">@yield('breadcrumb', 'Dashboard')</span>
                 </div>
             </div>
 
-            <div class="topbar-search">
-                <span class="search-icon">🔍</span>
-                <input type="text" placeholder="Search...">
+            {{-- Search --}}
+            <div class="relative w-[220px] hidden md:block">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-gray-400">🔍</span>
+                <input type="text" placeholder="Search..."
+                    class="w-full pl-9 pr-4 py-[7px] border border-[#E5EAF2] rounded-lg text-[13px]
+                              bg-[#F0F4F8] text-navy font-[Sora] outline-none transition-all
+                              focus:border-navy focus:bg-white">
             </div>
 
-            <div class="topbar-right">
-                <a href="{{ route('admin.reports.monthly') }}" class="topbar-btn" title="Reports">📊</a>
-                <a href="#" class="topbar-btn" title="Notifications">
-                    🔔
-                    <span class="notif-dot"></span>
+            {{-- Right --}}
+            <div class="flex items-center gap-2">
+                <a href="{{ route('admin.reports.monthly') }}"
+                    class="w-9 h-9 border border-[#E5EAF2] rounded-[9px] flex items-center justify-center
+                          text-[15px] text-gray-500 no-underline hover:bg-[#F0F4F8] hover:text-navy transition-all">
+                    📊
                 </a>
-                <a href="{{ route('admin.settings') }}" class="topbar-btn" title="Settings">⚙️</a>
+                <a href="#"
+                    class="relative w-9 h-9 border border-[#E5EAF2] rounded-[9px] flex items-center
+                          justify-center text-[15px] text-gray-500 no-underline hover:bg-[#F0F4F8]
+                          hover:text-navy transition-all">
+                    🔔
+                    <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                </a>
+                <a href="{{ route('admin.settings') }}"
+                    class="w-9 h-9 border border-[#E5EAF2] rounded-[9px] flex items-center justify-center
+                          text-[15px] text-gray-500 no-underline hover:bg-[#F0F4F8] hover:text-navy transition-all">
+                    ⚙️
+                </a>
             </div>
         </header>
 
         {{-- Page Content --}}
-        <main class="page-content">
+        <main class="flex-1 p-6">
 
             {{-- Flash Messages --}}
             @if (session('success'))
-                <div class="alert alert-success">✅ {{ session('success') }}</div>
+                <div
+                    class="flex items-center gap-2 px-4 py-3 mb-4 rounded-xl text-[13.5px]
+                            bg-green-50 text-green-700 border border-green-200">
+                    ✅ {{ session('success') }}
+                </div>
             @endif
 
             @if (session('error'))
-                <div class="alert alert-error">⚠ {{ session('error') }}</div>
+                <div
+                    class="flex items-center gap-2 px-4 py-3 mb-4 rounded-xl text-[13.5px]
+                            bg-red-50 text-red-600 border border-red-200">
+                    ⚠ {{ session('error') }}
+                </div>
             @endif
 
             @if (session('warning'))
-                <div class="alert alert-warning">⚡ {{ session('warning') }}</div>
+                <div
+                    class="flex items-center gap-2 px-4 py-3 mb-4 rounded-xl text-[13.5px]
+                            bg-amber-50 text-amber-700 border border-amber-200">
+                    ⚡ {{ session('warning') }}
+                </div>
             @endif
 
             @yield('content')
         </main>
 
         {{-- Footer --}}
-        <footer class="page-footer">
+        <footer
+            class="px-6 py-4 border-t border-[#E5EAF2] bg-white flex items-center
+                       justify-between text-[12px] text-gray-400">
             <span>© {{ date('Y') }} Vitai Finance. All rights reserved.</span>
-            <span class="footer-right">Laravel 13 · PHP {{ phpversion() }} · v1.0.0</span>
+            <span class="font-mono">Laravel 13 · PHP {{ phpversion() }} · v1.0.0</span>
         </footer>
+
     </div>
 
+    {{-- DataTables JS --}}
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+
     <script>
+        // Sidebar toggle
         function toggleSidebar() {
-            const s = document.getElementById('sidebar');
-            const o = document.getElementById('overlay');
-            s.classList.toggle('open');
-            o.classList.toggle('show');
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('overlay').classList.toggle('hidden');
         }
 
         function closeSidebar() {
-            document.getElementById('sidebar').classList.remove('open');
-            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+            document.getElementById('overlay').classList.add('hidden');
         }
 
+        // Submenu toggle
         function toggleSubmenu(el) {
             el.classList.toggle('open');
             const sub = el.nextElementSibling;
             if (sub) sub.classList.toggle('open');
         }
+
+        // Init DataTable — har page par jo bhi .data-table class ho
+        $(document).ready(function() {
+            if ($('.data-table').length) {
+                $('.data-table').DataTable({
+                    responsive: true,
+                    pageLength: 10,
+                    lengthMenu: [10, 25, 50, 100],
+                    language: {
+                        search: 'Search:',
+                        lengthMenu: 'Show _MENU_ entries',
+                        info: 'Showing _START_ to _END_ of _TOTAL_ entries',
+                        paginate: {
+                            first: '«',
+                            last: '»',
+                            next: '›',
+                            previous: '‹',
+                        },
+                        emptyTable: 'No data available.',
+                        zeroRecords: 'No matching records found.',
+                    },
+                    order: [
+                        [0, 'desc']
+                    ],
+                });
+            }
+        });
     </script>
 
     @stack('scripts')

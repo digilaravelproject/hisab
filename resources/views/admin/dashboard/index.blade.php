@@ -3,473 +3,206 @@
 @section('title', 'Dashboard')
 @section('breadcrumb', 'Dashboard')
 
-@push('styles')
-    <style>
-        :root {
-            --primary: #1B3A6B;
-            --primary-light: #2D5499;
-            --bg: #F0F4F8;
-            --surface: #FFFFFF;
-            --text-primary: #1B3A6B;
-            --text-secondary: #6B7280;
-            --text-muted: #9CA3AF;
-            --border: #E5EAF2;
-            --success: #16A34A;
-            --success-bg: #F0FDF4;
-            --danger: #DC2626;
-            --danger-bg: #FEF2F2;
-            --warning: #D97706;
-            --warning-bg: #FFFBEB;
-            --info: #2563EB;
-            --info-bg: #EFF6FF;
-        }
-
-        /* Stat Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .stat-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 1.2rem 1.4rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 14px;
-            transition: box-shadow 0.2s;
-        }
-
-        .stat-card:hover {
-            box-shadow: 0 4px 16px rgba(27, 58, 107, 0.08);
-        }
-
-        .stat-icon {
-            width: 46px;
-            height: 46px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            flex-shrink: 0;
-        }
-
-        .stat-icon.blue {
-            background: #EFF6FF;
-        }
-
-        .stat-icon.green {
-            background: var(--success-bg);
-        }
-
-        .stat-icon.red {
-            background: var(--danger-bg);
-        }
-
-        .stat-icon.orange {
-            background: var(--warning-bg);
-        }
-
-        .stat-icon.purple {
-            background: #F5F3FF;
-        }
-
-        .stat-info {
-            flex: 1;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            margin-bottom: 4px;
-        }
-
-        .stat-value {
-            font-size: 1.65rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: -0.5px;
-            font-family: 'JetBrains Mono', monospace;
-            line-height: 1;
-        }
-
-        .stat-change {
-            font-size: 11px;
-            margin-top: 5px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .stat-change.up {
-            color: var(--success);
-        }
-
-        .stat-change.down {
-            color: var(--danger);
-        }
-
-        /* Grid Layout */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 340px;
-            gap: 1rem;
-        }
-
-        @media (max-width: 1100px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Cards */
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            overflow: hidden;
-        }
-
-        .card-header {
-            padding: 1rem 1.4rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .card-header h3 {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .card-header .view-all {
-            font-size: 12px;
-            color: var(--primary-light);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .card-header .view-all:hover {
-            text-decoration: underline;
-        }
-
-        .card-body {
-            padding: 1.2rem 1.4rem;
-        }
-
-        /* Recent Transactions Table */
-        .table-mini {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .table-mini th {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            padding: 0 0 0.7rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .table-mini td {
-            padding: 0.7rem 0;
-            font-size: 13px;
-            color: var(--text-primary);
-            border-bottom: 1px solid var(--border);
-            vertical-align: middle;
-        }
-
-        .table-mini tr:last-child td {
-            border-bottom: none;
-        }
-
-        .txn-type {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .txn-type.credit {
-            background: var(--success-bg);
-            color: var(--success);
-        }
-
-        .txn-type.debit {
-            background: var(--danger-bg);
-            color: var(--danger);
-        }
-
-        .txn-amount {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
-        }
-
-        .txn-amount.credit {
-            color: var(--success);
-        }
-
-        .txn-amount.debit {
-            color: var(--danger);
-        }
-
-        /* User List */
-        .user-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 0.65rem 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .user-item:last-child {
-            border-bottom: none;
-        }
-
-        .user-avatar {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            background: var(--info-bg);
-            color: var(--info);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .user-name {
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .user-mobile {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .user-joined {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-left: auto;
-        }
-
-        /* Status Badges */
-        .badge {
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .badge-success {
-            background: var(--success-bg);
-            color: var(--success);
-        }
-
-        .badge-danger {
-            background: var(--danger-bg);
-            color: var(--danger);
-        }
-
-        .badge-warning {
-            background: var(--warning-bg);
-            color: var(--warning);
-        }
-
-        /* Quick Actions */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.8rem;
-            margin-bottom: 1rem;
-        }
-
-        .action-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 0.7rem 1rem;
-            background: var(--bg);
-            border: 1.5px solid var(--border);
-            border-radius: 10px;
-            font-family: 'Sora', sans-serif;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: all 0.15s;
-            text-decoration: none;
-        }
-
-        .action-btn:hover {
-            border-color: var(--primary);
-            background: var(--surface);
-            color: var(--primary);
-        }
-
-        /* Mini bar chart */
-        .mini-chart {
-            display: flex;
-            align-items: flex-end;
-            gap: 4px;
-            height: 60px;
-            margin-top: 0.5rem;
-        }
-
-        .bar {
-            flex: 1;
-            border-radius: 4px 4px 0 0;
-            transition: opacity 0.2s;
-        }
-
-        .bar:hover {
-            opacity: 0.7;
-        }
-
-        .bar.credit {
-            background: #16A34A;
-        }
-
-        .bar.debit {
-            background: #DC2626;
-        }
-    </style>
-@endpush
-
 @section('content')
 
     {{-- Page Header --}}
-    <div class="page-header">
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
         <div>
-            <h1>Dashboard</h1>
-            <p>Welcome back, {{ auth('admin')->user()->name }}! Here's what's happening.</p>
+            <h1 class="text-xl sm:text-2xl font-bold text-navy tracking-tight">Dashboard</h1>
+            <p class="text-sm text-gray-500 mt-1">Welcome back, {{ auth('admin')->user()->name }}!</p>
         </div>
-        <div style="display:flex; gap:0.6rem;">
+        <div class="flex gap-2 shrink-0">
             <a href="{{ route('admin.reports.export') }}"
-                style="display:inline-flex; align-items:center; gap:6px; padding:0.5rem 1rem; background:#EEF2FA; border:1.5px solid #C7D4EA; border-radius:9px; font-size:13px; font-weight:500; color:#1B3A6B; text-decoration:none;">
-                📤 Export Report
+                class="inline-flex items-center gap-2 px-3 py-2 bg-[#EEF2FA] border border-[#C7D4EA]
+                  rounded-lg text-xs sm:text-sm font-medium text-navy no-underline hover:bg-[#dde6f5] transition-all">
+                📤 Export
             </a>
             <a href="{{ route('admin.users.create') }}"
-                style="display:inline-flex; align-items:center; gap:6px; padding:0.5rem 1rem; background:#1B3A6B; border:1.5px solid #1B3A6B; border-radius:9px; font-size:13px; font-weight:600; color:#fff; text-decoration:none;">
+                class="inline-flex items-center gap-2 px-3 py-2 bg-navy text-white border border-navy
+                  rounded-lg text-xs sm:text-sm font-semibold no-underline hover:bg-navy-dark transition-all">
                 ➕ Add User
             </a>
         </div>
     </div>
 
-    {{-- Stat Cards --}}
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon blue">👥</div>
-            <div class="stat-info">
-                <div class="stat-label">Total Users</div>
-                <div class="stat-value">{{ number_format($stats['total_users']) }}</div>
-                <div class="stat-change up">▲ +{{ $stats['new_users_this_month'] }} this month</div>
+    {{-- ── STAT CARDS ── --}}
+    {{-- Mobile: 1 col | sm: 2 col | lg: 5 col --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+
+        {{-- Total Users --}}
+        <div
+            class="bg-white border border-[#E5EAF2] rounded-2xl p-4 sm:p-5 flex items-center gap-4
+                hover:shadow-[0_4px_16px_rgba(27,58,107,0.08)] transition-shadow">
+            <div
+                class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-blue-50 flex items-center
+                    justify-center text-lg sm:text-xl shrink-0">
+                👥</div>
+            <div class="min-w-0">
+                <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1 truncate">
+                    Total Users
+                </div>
+                <div class="text-xl sm:text-2xl font-bold text-navy font-mono leading-none">
+                    {{ number_format($stats['total_users']) }}
+                </div>
+                <div class="text-[11px] text-green-600 mt-1">
+                    ▲ +{{ $stats['new_users_this_month'] }} this month
+                </div>
             </div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-icon green">💰</div>
-            <div class="stat-info">
-                <div class="stat-label">Total Credit</div>
-                <div class="stat-value">₹{{ number_format($stats['total_credit'] / 100000, 1) }}L</div>
-                <div class="stat-change up">▲ This month</div>
+        {{-- Total Credit --}}
+        <div
+            class="bg-white border border-[#E5EAF2] rounded-2xl p-4 sm:p-5 flex items-center gap-4
+                hover:shadow-[0_4px_16px_rgba(27,58,107,0.08)] transition-shadow">
+            <div
+                class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-green-50 flex items-center
+                    justify-center text-lg sm:text-xl shrink-0">
+                💰</div>
+            <div class="min-w-0">
+                <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1 truncate">
+                    Total Credit
+                </div>
+                <div class="text-xl sm:text-2xl font-bold text-navy font-mono leading-none">
+                    ₹{{ number_format($stats['total_credit'] / 100000, 1) }}L
+                </div>
+                <div class="text-[11px] text-green-600 mt-1">▲ This month</div>
             </div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-icon red">💸</div>
-            <div class="stat-info">
-                <div class="stat-label">Total Debit</div>
-                <div class="stat-value">₹{{ number_format($stats['total_debit'] / 100000, 1) }}L</div>
-                <div class="stat-change down">▼ This month</div>
+        {{-- Total Debit --}}
+        <div
+            class="bg-white border border-[#E5EAF2] rounded-2xl p-4 sm:p-5 flex items-center gap-4
+                hover:shadow-[0_4px_16px_rgba(27,58,107,0.08)] transition-shadow">
+            <div
+                class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-red-50 flex items-center
+                    justify-center text-lg sm:text-xl shrink-0">
+                💸</div>
+            <div class="min-w-0">
+                <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1 truncate">
+                    Total Debit
+                </div>
+                <div class="text-xl sm:text-2xl font-bold text-navy font-mono leading-none">
+                    ₹{{ number_format($stats['total_debit'] / 100000, 1) }}L
+                </div>
+                <div class="text-[11px] text-red-500 mt-1">▼ This month</div>
             </div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-icon orange">📋</div>
-            <div class="stat-info">
-                <div class="stat-label">Transactions</div>
-                <div class="stat-value">{{ number_format($stats['total_transactions']) }}</div>
-                <div class="stat-change up">▲ +{{ $stats['today_transactions'] }} today</div>
+        {{-- Transactions --}}
+        <div
+            class="bg-white border border-[#E5EAF2] rounded-2xl p-4 sm:p-5 flex items-center gap-4
+                hover:shadow-[0_4px_16px_rgba(27,58,107,0.08)] transition-shadow">
+            <div
+                class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-amber-50 flex items-center
+                    justify-center text-lg sm:text-xl shrink-0">
+                📋</div>
+            <div class="min-w-0">
+                <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1 truncate">
+                    Transactions
+                </div>
+                <div class="text-xl sm:text-2xl font-bold text-navy font-mono leading-none">
+                    {{ number_format($stats['total_transactions']) }}
+                </div>
+                <div class="text-[11px] text-green-600 mt-1">▲ +{{ $stats['today_transactions'] }} today</div>
             </div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-icon purple">🏪</div>
-            <div class="stat-info">
-                <div class="stat-label">Businesses</div>
-                <div class="stat-value">{{ number_format($stats['total_businesses']) }}</div>
-                <div class="stat-change" style="color:var(--text-muted);">Registered</div>
+        {{-- Businesses --}}
+        <div
+            class="bg-white border border-[#E5EAF2] rounded-2xl p-4 sm:p-5 flex items-center gap-4
+                hover:shadow-[0_4px_16px_rgba(27,58,107,0.08)] transition-shadow sm:col-span-2 lg:col-span-1">
+            <div
+                class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-purple-50 flex items-center
+                    justify-center text-lg sm:text-xl shrink-0">
+                🏪</div>
+            <div class="min-w-0">
+                <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1 truncate">
+                    Businesses
+                </div>
+                <div class="text-xl sm:text-2xl font-bold text-navy font-mono leading-none">
+                    {{ number_format($stats['total_businesses']) }}
+                </div>
+                <div class="text-[11px] text-gray-400 mt-1">Registered</div>
             </div>
         </div>
+
     </div>
 
-    {{-- Main Dashboard Grid --}}
-    <div class="dashboard-grid">
+    {{-- ── MAIN GRID ── --}}
+    <div class="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-4">
 
-        {{-- Left: Transactions + Chart --}}
-        <div style="display:flex; flex-direction:column; gap:1rem;">
+        {{-- LEFT --}}
+        <div class="flex flex-col gap-4">
 
             {{-- Recent Transactions --}}
-            <div class="card">
-                <div class="card-header">
-                    <h3>📋 Recent Transactions</h3>
-                    <a href="{{ route('admin.transactions.index') }}" class="view-all">View all →</a>
+            <div class="bg-white border border-[#E5EAF2] rounded-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-[#E5EAF2]">
+                    <h3 class="text-sm font-semibold text-navy">📋 Recent Transactions</h3>
+                    <a href="{{ route('admin.transactions.index') }}"
+                        class="text-xs text-navy-light font-medium no-underline hover:underline">View all →</a>
                 </div>
-                <div class="card-body" style="padding:0 1.4rem;">
-                    <table class="table-mini">
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[500px]">
                         <thead>
-                            <tr>
-                                <th>User</th>
-                                <th>Type</th>
-                                <th>Source</th>
-                                <th>Amount</th>
-                                <th>Date</th>
+                            <tr class="bg-[#EEF2FA]">
+                                <th
+                                    class="text-left text-[11px] font-semibold text-gray-500 uppercase
+                                       tracking-wider px-5 py-3 whitespace-nowrap">
+                                    User</th>
+                                <th
+                                    class="text-left text-[11px] font-semibold text-gray-500 uppercase
+                                       tracking-wider px-5 py-3 whitespace-nowrap">
+                                    Type</th>
+                                <th
+                                    class="text-left text-[11px] font-semibold text-gray-500 uppercase
+                                       tracking-wider px-5 py-3 whitespace-nowrap">
+                                    Source</th>
+                                <th
+                                    class="text-left text-[11px] font-semibold text-gray-500 uppercase
+                                       tracking-wider px-5 py-3 whitespace-nowrap">
+                                    Amount</th>
+                                <th
+                                    class="text-left text-[11px] font-semibold text-gray-500 uppercase
+                                       tracking-wider px-5 py-3 whitespace-nowrap">
+                                    Date</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-[#F4F6FB]">
                             @forelse($recentTransactions as $txn)
-                                <tr>
-                                    <td>{{ $txn->user->name ?? 'Unknown' }}</td>
-                                    <td>
-                                        <span class="txn-type {{ $txn->type }}">
-                                            {{ $txn->type === 'credit' ? '↑' : '↓' }}
-                                            {{ ucfirst($txn->type) }}
-                                        </span>
+                                <tr class="hover:bg-[#F8FAFC] transition-colors">
+                                    <td class="px-5 py-3 text-[13px] text-navy font-medium whitespace-nowrap">
+                                        {{ $txn->user->name ?? 'Unknown' }}
                                     </td>
-                                    <td style="color:var(--text-secondary);">{{ strtoupper($txn->source) }}</td>
-                                    <td>
-                                        <span class="txn-amount {{ $txn->type }}">
-                                            {{ $txn->type === 'credit' ? '+' : '-' }}₹{{ number_format($txn->amount, 2) }}
-                                        </span>
+                                    <td class="px-5 py-3">
+                                        @if ($txn->type === 'credit')
+                                            <span
+                                                class="inline-flex items-center gap-1 px-2 py-[3px] rounded-md
+                                                 text-[11px] font-semibold bg-green-50 text-green-700">
+                                                ↑ Credit
+                                            </span>
+                                        @else
+                                            <span
+                                                class="inline-flex items-center gap-1 px-2 py-[3px] rounded-md
+                                                 text-[11px] font-semibold bg-red-50 text-red-600">
+                                                ↓ Debit
+                                            </span>
+                                        @endif
                                     </td>
-                                    <td style="color:var(--text-muted); font-size:12px;">
+                                    <td class="px-5 py-3 text-[12px] text-gray-500 uppercase font-mono">
+                                        {{ $txn->source }}
+                                    </td>
+                                    <td
+                                        class="px-5 py-3 text-[13px] font-bold font-mono whitespace-nowrap
+                                       {{ $txn->type === 'credit' ? 'text-green-600' : 'text-red-500' }}">
+                                        {{ $txn->type === 'credit' ? '+' : '-' }}₹{{ number_format($txn->amount, 2) }}
+                                    </td>
+                                    <td class="px-5 py-3 text-[12px] text-gray-400 whitespace-nowrap">
                                         {{ $txn->transaction_date->format('d M Y') }}
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5"
-                                        style="text-align:center; color:var(--text-muted); padding:1.5rem 0;">
+                                    <td colspan="5" class="text-center py-10 text-sm text-gray-400">
                                         No transactions yet
                                     </td>
                                 </tr>
@@ -479,54 +212,53 @@
                 </div>
             </div>
 
-            {{-- Monthly Overview (visual bars) --}}
-            <div class="card">
-                <div class="card-header">
-                    <h3>📊 Monthly Overview — {{ now()->format('Y') }}</h3>
+            {{-- Monthly Overview --}}
+            <div class="bg-white border border-[#E5EAF2] rounded-2xl overflow-hidden">
+                <div class="px-5 py-4 border-b border-[#E5EAF2]">
+                    <h3 class="text-sm font-semibold text-navy">📊 Monthly Overview — {{ now()->format('Y') }}</h3>
                 </div>
-                <div class="card-body">
-                    <div style="display:flex; gap:1.5rem; margin-bottom:0.8rem;">
+                <div class="p-5">
+                    <div class="flex flex-wrap gap-4 mb-4">
                         <div>
-                            <div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">Net Balance</div>
+                            <div class="text-[11px] text-gray-400 mb-1">Net Balance</div>
                             <div
-                                style="font-size:1.3rem; font-weight:700; font-family:'JetBrains Mono',monospace; color:{{ $stats['total_credit'] - $stats['total_debit'] >= 0 ? 'var(--success)' : 'var(--danger)' }};">
+                                class="text-xl font-bold font-mono
+                                    {{ $stats['total_credit'] - $stats['total_debit'] >= 0 ? 'text-green-600' : 'text-red-500' }}">
                                 ₹{{ number_format(abs($stats['total_credit'] - $stats['total_debit']), 2) }}
                             </div>
                         </div>
-                        <div
-                            style="display:flex; gap:12px; align-items:flex-end; margin-left:auto; font-size:12px; color:var(--text-muted);">
-                            <span style="display:flex; align-items:center; gap:5px;"><span
-                                    style="width:10px;height:10px;background:var(--success);border-radius:3px;display:inline-block;"></span>
-                                Credit</span>
-                            <span style="display:flex; align-items:center; gap:5px;"><span
-                                    style="width:10px;height:10px;background:var(--danger);border-radius:3px;display:inline-block;"></span>
-                                Debit</span>
+                        <div class="ml-auto flex items-end gap-3 text-xs text-gray-400">
+                            <span class="flex items-center gap-1">
+                                <span class="w-3 h-3 bg-green-600 rounded-sm inline-block"></span> Credit
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <span class="w-3 h-3 bg-red-500 rounded-sm inline-block"></span> Debit
+                            </span>
                         </div>
                     </div>
-
-                    {{-- Simple 12-month bar chart using inline styles --}}
-                    <div class="mini-chart" style="height:80px;">
-                        @php
-                            $months = $monthlyData ?? [];
-                            $maxVal = collect($months)->max(fn($m) => max($m['credit'] ?? 1, $m['debit'] ?? 1)) ?: 1;
-                        @endphp
+                    @php
+                        $months = $monthlyData ?? [];
+                        $maxVal = collect($months)->max(fn($m) => max($m['credit'] ?? 1, $m['debit'] ?? 1)) ?: 1;
+                        $moNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    @endphp
+                    <div class="flex items-end gap-1 h-20">
                         @foreach (range(1, 12) as $m)
                             @php
                                 $d = $months[$m] ?? ['credit' => 0, 'debit' => 0];
                                 $ch = max(4, ($d['credit'] / $maxVal) * 76);
                                 $dh = max(4, ($d['debit'] / $maxVal) * 76);
                             @endphp
-                            <div
-                                style="flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; justify-content:flex-end;">
-                                <div class="bar credit" style="height:{{ $ch }}px; width:100%;"></div>
-                                <div class="bar debit" style="height:{{ $dh }}px; width:100%;"></div>
+                            <div class="flex-1 flex flex-col items-center gap-[2px] justify-end">
+                                <div class="w-full rounded-t-sm bg-green-600 opacity-80 hover:opacity-100 transition-opacity"
+                                    style="height:{{ $ch }}px"></div>
+                                <div class="w-full rounded-t-sm bg-red-500 opacity-70 hover:opacity-100 transition-opacity"
+                                    style="height:{{ $dh }}px"></div>
                             </div>
                         @endforeach
                     </div>
-                    <div style="display:flex; justify-content:space-between; margin-top:5px;">
-                        @foreach (['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as $mo)
-                            <span
-                                style="font-size:9px; color:var(--text-muted); flex:1; text-align:center;">{{ $mo }}</span>
+                    <div class="flex justify-between mt-2">
+                        @foreach ($moNames as $mo)
+                            <span class="flex-1 text-center text-[9px] text-gray-400">{{ $mo }}</span>
                         @endforeach
                     </div>
                 </div>
@@ -534,83 +266,91 @@
 
         </div>
 
-        {{-- Right: Recent Users + Quick Actions --}}
-        <div style="display:flex; flex-direction:column; gap:1rem;">
+        {{-- RIGHT --}}
+        <div class="flex flex-col gap-4">
 
             {{-- Quick Actions --}}
-            <div class="card">
-                <div class="card-header">
-                    <h3>⚡ Quick Actions</h3>
+            <div class="bg-white border border-[#E5EAF2] rounded-2xl overflow-hidden">
+                <div class="px-5 py-4 border-b border-[#E5EAF2]">
+                    <h3 class="text-sm font-semibold text-navy">⚡ Quick Actions</h3>
                 </div>
-                <div class="card-body">
-                    <div class="quick-actions">
-                        <a href="{{ route('admin.users.create') }}" class="action-btn">➕ New User</a>
-                        <a href="{{ route('admin.reports.monthly') }}" class="action-btn">📊 Reports</a>
-                        <a href="{{ route('admin.transactions.uncategorized') }}" class="action-btn">🏷️ Categorize</a>
-                        <a href="{{ route('admin.reports.export') }}" class="action-btn">📤 Export</a>
+                <div class="p-4">
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        @foreach ([['href' => route('admin.users.create'), 'icon' => '➕', 'label' => 'New User'], ['href' => route('admin.reports.monthly'), 'icon' => '📊', 'label' => 'Reports'], ['href' => route('admin.transactions.uncategorized'), 'icon' => '🏷️', 'label' => 'Categorize'], ['href' => route('admin.reports.export'), 'icon' => '📤', 'label' => 'Export']] as $btn)
+                            <a href="{{ $btn['href'] }}"
+                                class="flex items-center gap-2 px-3 py-[10px] bg-[#F0F4F8] border border-[#E5EAF2]
+                              rounded-xl text-[13px] font-medium text-navy no-underline
+                              hover:border-navy hover:bg-white transition-all">
+                                {{ $btn['icon'] }} {{ $btn['label'] }}
+                            </a>
+                        @endforeach
                     </div>
 
-                    {{-- Uncategorized Alert --}}
                     @if (($stats['uncategorized_transactions'] ?? 0) > 0)
-                        <div
-                            style="background:var(--warning-bg); border:1px solid #FDE68A; border-radius:9px; padding:0.7rem 0.9rem; font-size:12.5px; color:var(--warning);">
-                            ⚡ <strong>{{ $stats['uncategorized_transactions'] }}</strong> transactions need categorization.
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-[12.5px] text-amber-700">
+                            ⚡ <strong>{{ $stats['uncategorized_transactions'] }}</strong> need categorization.
                             <a href="{{ route('admin.transactions.uncategorized') }}"
-                                style="color:var(--warning); font-weight:600;">Fix now →</a>
+                                class="text-amber-700 font-semibold no-underline hover:underline">Fix now →</a>
                         </div>
                     @endif
                 </div>
             </div>
 
             {{-- Recent Users --}}
-            <div class="card" style="flex:1;">
-                <div class="card-header">
-                    <h3>👤 New Users</h3>
-                    <a href="{{ route('admin.users.index') }}" class="view-all">View all →</a>
+            <div class="bg-white border border-[#E5EAF2] rounded-2xl overflow-hidden flex-1">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-[#E5EAF2]">
+                    <h3 class="text-sm font-semibold text-navy">👤 New Users</h3>
+                    <a href="{{ route('admin.users.index') }}"
+                        class="text-xs text-navy-light font-medium no-underline hover:underline">View all →</a>
                 </div>
-                <div class="card-body" style="padding: 0.4rem 1.4rem;">
+                <div class="divide-y divide-[#F4F6FB]">
                     @forelse($recentUsers as $user)
-                        <div class="user-item">
-                            <div class="user-avatar">{{ strtoupper(substr($user->name, 0, 2)) }}</div>
-                            <div>
-                                <div class="user-name">{{ $user->name }}</div>
-                                <div class="user-mobile">{{ $user->mobile }}</div>
+                        <div class="flex items-center gap-3 px-5 py-3">
+                            <div
+                                class="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center
+                                justify-center text-xs font-bold shrink-0">
+                                {{ strtoupper(substr($user->name ?: 'U', 0, 2)) }}
                             </div>
-                            <div class="user-joined">
+                            <div class="flex-1 min-w-0">
+                                <div class="text-[13px] font-medium text-navy truncate">
+                                    {{ $user->name ?: 'No name' }}
+                                </div>
+                                <div class="text-[11px] text-gray-400 font-mono">{{ $user->mobile }}</div>
+                            </div>
+                            <div class="text-[11px] text-gray-400 whitespace-nowrap shrink-0">
                                 {{ $user->created_at->diffForHumans() }}
                             </div>
                         </div>
                     @empty
-                        <div style="text-align:center; color:var(--text-muted); padding:1.5rem 0; font-size:13px;">No users
-                            yet</div>
+                        <div class="text-center py-8 text-sm text-gray-400">No users yet</div>
                     @endforelse
                 </div>
             </div>
 
             {{-- System Status --}}
-            <div class="card">
-                <div class="card-header">
-                    <h3>🖥 System Status</h3>
+            <div class="bg-white border border-[#E5EAF2] rounded-2xl overflow-hidden">
+                <div class="px-5 py-4 border-b border-[#E5EAF2]">
+                    <h3 class="text-sm font-semibold text-navy">🖥 System Status</h3>
                 </div>
-                <div class="card-body">
-                    <div style="display:flex; flex-direction:column; gap:0.6rem; font-size:13px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="color:var(--text-secondary);">Application</span>
-                            <span class="badge badge-success">✓ Online</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="color:var(--text-secondary);">Database</span>
-                            <span class="badge badge-success">✓ Connected</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="color:var(--text-secondary);">Queue Worker</span>
-                            <span class="badge badge-warning">⚡ Check</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="color:var(--text-secondary);">Laravel Version</span>
-                            <span
-                                style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-muted);">v{{ app()->version() }}</span>
-                        </div>
+                <div class="p-5 flex flex-col gap-3 text-[13px]">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-500">Application</span>
+                        <span class="px-2 py-[2px] rounded-md text-[11px] font-semibold bg-green-50 text-green-700">✓
+                            Online</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-500">Database</span>
+                        <span class="px-2 py-[2px] rounded-md text-[11px] font-semibold bg-green-50 text-green-700">✓
+                            Connected</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-500">Queue Worker</span>
+                        <span class="px-2 py-[2px] rounded-md text-[11px] font-semibold bg-amber-50 text-amber-700">⚡
+                            Check</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-500">Laravel Version</span>
+                        <span class="text-xs text-gray-400 font-mono">v{{ app()->version() }}</span>
                     </div>
                 </div>
             </div>
