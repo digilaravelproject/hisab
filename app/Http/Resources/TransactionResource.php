@@ -30,6 +30,8 @@ class TransactionResource extends JsonResource
                 'id'   => $this->bankAccount->id,
                 'name' => $this->bankAccount->bank_name ?? '',
             ]),
+            'receipt_url'      => $this->receipt_path ? \Illuminate\Support\Facades\Storage::url($this->receipt_path) : null,
+            'receipt_type'     => $this->receipt_type,
             'created_at'       => $this->created_at?->format('Y-m-d H:i:s'),
         ];
     }

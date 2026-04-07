@@ -21,7 +21,9 @@ class Transaction extends Model
         'reference_no',
         'description',
         'transaction_date',
-        'is_categorized'
+        'is_categorized',
+        'receipt_path',
+        'receipt_type'
     ];
 
     protected $casts = [

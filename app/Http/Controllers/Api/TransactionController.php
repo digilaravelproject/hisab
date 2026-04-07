@@ -8,6 +8,8 @@ use App\Services\TransactionService;
 use App\Traits\ApiResponseTrait;
 use App\Http\Resources\TransactionResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class TransactionController extends Controller
 {
@@ -135,12 +137,105 @@ class TransactionController extends Controller
     }
 
     /**
+     * PATCH /api/v1/transactions/{id}
+     * Update transaction fields
+     */
+    public function update(Request $request, Transaction $transaction)
+    {
+        if ($transaction->user_id !== $request->user()->id) {
+            return $this->errorResponse('Unauthorized', null, 403);
+        }
+
+        $validated = $request->validate([
+            'type'             => 'sometimes|required|in:credit,debit',
+            'source'           => 'sometimes|required|in:bank,upi,cash',
+            'amount'           => 'sometimes|required|numeric|min:0.01',
+            'transaction_date' => 'sometimes|required|date',
+            'category_id'      => 'nullable|exists:categories,id',
+            'business_id'      => 'nullable|exists:businesses,id',
+            'bank_account_id'  => 'nullable|exists:bank_accounts,id',
+            'reference_no'     => 'nullable|string|max:100',
+            'description'      => 'nullable|string|max:500',
+        ]);
+
+        $transaction->fill($validated);
+        if (array_key_exists('category_id', $validated)) {
+            $transaction->is_categorized = !is_null($validated['category_id']);
+        }
+        $transaction->save();
+
+        return $this->successResponse(
+            new TransactionResource($transaction->fresh(['category', 'business', 'bankAccount'])),
+            'Transaction updated successfully'
+        );
+    }
+
+    /**
+     * POST /api/v1/transactions/{id}/receipt
+     * Attach/update receipt file (PDF/image)
+     */
+    public function uploadReceipt(Request $request, Transaction $transaction)
+    {
+        if ($transaction->user_id !== $request->user()->id) {
+            return $this->errorResponse('Unauthorized', null, 403);
+        }
+
+        $validated = $request->validate([
+            'receipt' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240',
+        ], [
+            'receipt.mimes' => 'Receipt must be JPG, PNG, or PDF.',
+            'receipt.max'   => 'Receipt size must not exceed 10MB.',
+        ]);
+
+        if ($transaction->receipt_path && Storage::exists($transaction->receipt_path)) {
+            Storage::delete($transaction->receipt_path);
+        }
+
+        $date   = $transaction->transaction_date ? $transaction->transaction_date->format('Y/m') : now()->format('Y/m');
+        $folder = "transactions/{$request->user()->id}/{$date}";
+        $file   = $request->file('receipt');
+        $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $filePath = $file->storeAs($folder, $fileName, 'local');
+
+        $transaction->update([
+            'receipt_path' => $filePath,
+            'receipt_type' => $file->getClientMimeType(),
+        ]);
+
+        return $this->successResponse(
+            new TransactionResource($transaction->fresh(['category', 'business', 'bankAccount'])),
+            'Receipt uploaded to transaction successfully'
+        );
+    }
+
+    /**
+     * DELETE /api/v1/transactions/{id}
+     * Delete specific transaction
+     */
+    public function destroy(Request $request, Transaction $transaction)
+    {
+        if ($transaction->user_id !== $request->user()->id) {
+            return $this->errorResponse('Unauthorized', null, 403);
+        }
+
+        if ($transaction->receipt_path && Storage::exists($transaction->receipt_path)) {
+            Storage::delete($transaction->receipt_path);
+        }
+
+        $transaction->delete();
+
+        return $this->successResponse(null, 'Transaction deleted successfully', 200);
+    }
+
+    /**
      * PATCH /api/transactions/{id}/categorize
      * Purpose/category assign karna
      */
     public function categorize(Request $request, Transaction $transaction)
     {
-        $this->authorize('update', $transaction);
+        if ($transaction->user_id !== $request->user()->id) {
+            return $this->errorResponse('Unauthorized', null, 403);
+        }
 
         $request->validate([
             'category_id'  => 'required|exists:categories,id',
