@@ -63,10 +63,10 @@ Route::prefix('v1')->group(function () {
             Route::get('/download/csv',  [ReportController::class, 'downloadTransactionsCsv']);
             Route::get('/download/pdf',  [ReportController::class, 'downloadTransactionsPdf']);
             Route::get('/{id}',          [TransactionController::class, 'show']);
-            Route::patch('/{id}',        [TransactionController::class, 'update']);
-            Route::delete('/{id}',       [TransactionController::class, 'destroy']);
-            Route::post('/{id}/receipt', [TransactionController::class, 'uploadReceipt']);
-            Route::patch('/{id}/categorize', [TransactionController::class, 'categorize']);
+            Route::put('/{transaction}',        [TransactionController::class, 'update']);
+            Route::delete('/{transaction}',       [TransactionController::class, 'destroy']);
+            Route::post('/{transaction}/receipt', [TransactionController::class, 'uploadReceipt']);
+            Route::patch('/{transaction}/categorize', [TransactionController::class, 'categorize']);
         });
 
         // Businesses

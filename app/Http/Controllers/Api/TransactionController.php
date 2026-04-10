@@ -25,7 +25,7 @@ class TransactionController extends Controller
     public function index(Request $request)
     {
         $searchString = $request->get('search_string', '');
-        
+
         $transactions = Transaction::query()
             ->where('user_id', $request->user()->id)
             ->when($searchString, function ($q) use ($searchString) {
