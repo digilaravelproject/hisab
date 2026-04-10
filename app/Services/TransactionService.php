@@ -53,4 +53,47 @@ class TransactionService
                 ->count(),
         ];
     }
+
+    public function getDashboardData(User $user, ?int $businessId = null): array
+    {
+        $query = Transaction::query();
+
+        // Filter by business_id if provided, otherwise by user_id
+        if ($businessId) {
+            $query->where('business_id', $businessId)
+                  ->where('user_id', $user->id);
+        } else {
+            $query->where('user_id', $user->id);
+        }
+
+        // Get total credit and debit
+        $totalCredit = (clone $query)->credit()->sum('amount');
+        $totalDebit  = (clone $query)->debit()->sum('amount');
+
+        // Calculate net balance
+        $netBalance = $totalCredit - $totalDebit;
+
+        // Get today's activity
+        $today = now()->toDateString();
+        $todaysCredit = (clone $query)
+            ->credit()
+            ->whereDate('transaction_date', $today)
+            ->sum('amount');
+
+        $todaysDebit = (clone $query)
+            ->debit()
+            ->whereDate('transaction_date', $today)
+            ->sum('amount');
+
+        return [
+            'total_balance'  => $totalCredit - $totalDebit,
+            'income'         => (float) $totalCredit,
+            'expense'        => (float) $totalDebit,
+            'net'            => (float) $netBalance,
+            'today_activity' => [
+                'credit' => (float) $todaysCredit,
+                'debit'  => (float) $todaysDebit,
+            ],
+        ];
+    }
 }

@@ -60,6 +60,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/',              [TransactionController::class, 'index']);
             Route::post('/',             [TransactionController::class, 'store']);
             Route::get('/summary',       [TransactionController::class, 'summary']);
+            Route::get('/dashboard',     [TransactionController::class, 'dashboard']);
             Route::get('/download/csv',  [ReportController::class, 'downloadTransactionsCsv']);
             Route::get('/download/pdf',  [ReportController::class, 'downloadTransactionsPdf']);
             Route::get('/{id}',          [TransactionController::class, 'show']);
