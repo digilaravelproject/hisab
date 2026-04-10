@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\Transaction;
+use App\Models\Budget;
+use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 
 class TransactionService
@@ -90,6 +92,9 @@ class TransactionService
             ->whereDate('transaction_date', $today)
             ->sum('amount');
 
+        // Get weekly budget data
+        $weeklyBudgetData = $this->getWeeklyBudgetData($user, $businessId);
+
         return [
             'total_balance'  => $totalCredit - $totalDebit,
             'income'         => (float) $totalCredit,
@@ -99,6 +104,56 @@ class TransactionService
                 'credit' => (float) $todaysCredit,
                 'debit'  => (float) $todaysDebit,
             ],
+            'weekly_budget' => $weeklyBudgetData,
         ];
+    }
+
+    private function getWeeklyBudgetData(User $user, ?int $businessId = null): array
+    {
+        $month = now()->month;
+        $year = now()->year;
+        $weekStart = now()->startOfWeek();
+        $weekEnd = now()->endOfWeek();
+
+        // Get all budgets for current month
+        $budgetsQuery = Budget::where('user_id', $user->id)
+            ->where('month', $month)
+            ->where('year', $year)
+            ->with('category');
+
+        $budgets = $budgetsQuery->get();
+
+        $weeklyBudgets = $budgets->map(function ($budget) use ($user, $weekStart, $weekEnd, $businessId) {
+            // Get weekly limit (target_amount / 4 weeks)
+            $weeklyLimit = (float) $budget->target_amount / 4;
+
+            // Get weekly spending for this category
+            $spendingQuery = Transaction::where('user_id', $user->id)
+                ->where('type', 'debit')
+                ->where('category_id', $budget->category_id)
+                ->whereBetween('transaction_date', [$weekStart, $weekEnd]);
+
+            // If businessId is provided, filter by business
+            if ($businessId) {
+                $spendingQuery->where('business_id', $businessId);
+            }
+
+            $weeklySpent = (float) $spendingQuery->sum('amount');
+
+            // Calculate percentage
+            $percentage = $weeklyLimit > 0
+                ? round(($weeklySpent / $weeklyLimit) * 100, 1)
+                : 0;
+
+            return [
+                'category_id'  => $budget->category_id,
+                'category_name' => $budget->category?->name ?? 'Unknown',
+                'weekly_budget' => $weeklyLimit,
+                'weekly_spent' => $weeklySpent,
+                'percentage'   => $percentage,
+            ];
+        })->toArray();
+
+        return $weeklyBudgets;
     }
 }
