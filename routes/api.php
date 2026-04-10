@@ -51,16 +51,15 @@ Route::prefix('v1')->group(function () {
         // Transactions
         Route::prefix('transactions')->group(function () {
             Route::get('/',              [TransactionController::class, 'index']);
-            Route::get('/search',        [TransactionController::class, 'search']);
             Route::post('/',             [TransactionController::class, 'store']);
-            Route::patch('/{id}',        [TransactionController::class, 'update']);
-            Route::post('/{id}/receipt', [TransactionController::class, 'uploadReceipt']);
             Route::get('/summary',       [TransactionController::class, 'summary']);
-            Route::get('/{id}',          [TransactionController::class, 'show']);
-            Route::patch('/{id}/categorize', [TransactionController::class, 'categorize']);
-            Route::delete('/{id}',       [TransactionController::class, 'destroy']);
             Route::get('/download/csv',  [ReportController::class, 'downloadTransactionsCsv']);
             Route::get('/download/pdf',  [ReportController::class, 'downloadTransactionsPdf']);
+            Route::get('/{id}',          [TransactionController::class, 'show']);
+            Route::patch('/{id}',        [TransactionController::class, 'update']);
+            Route::delete('/{id}',       [TransactionController::class, 'destroy']);
+            Route::post('/{id}/receipt', [TransactionController::class, 'uploadReceipt']);
+            Route::patch('/{id}/categorize', [TransactionController::class, 'categorize']);
         });
 
         // Businesses

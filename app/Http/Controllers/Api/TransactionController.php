@@ -19,16 +19,27 @@ class TransactionController extends Controller
 
     /**
      * GET /api/v1/transactions
-     * Filters: type, source, business_id, category_id, from_date, to_date, uncategorized, per_page
+     * Get total transactions with optional filters
+     * Filters: search_string (optional), type, source, business_id, category_id, from_date, to_date, per_page
      */
     public function index(Request $request)
     {
+        $searchString = $request->get('search_string', '');
+        
         $transactions = Transaction::query()
             ->where('user_id', $request->user()->id)
+            ->when($searchString, function ($q) use ($searchString) {
+                return $q->where(function ($subQuery) use ($searchString) {
+                    $subQuery->where('description', 'like', "%{$searchString}%")
+                        ->orWhere('reference_no', 'like', "%{$searchString}%")
+                        ->orWhereHas('category', fn($c) => $c->where('name', 'like', "%{$searchString}%"));
+                });
+            })
             ->when($request->type, fn($q) => $q->where('type', $request->type))
             ->when($request->source, fn($q) => $q->where('source', $request->source))
             ->when($request->business_id, fn($q) => $q->where('business_id', $request->business_id))
             ->when($request->category_id, fn($q) => $q->where('category_id', $request->category_id))
+            ->when($request->bank_account_id, fn($q) => $q->where('bank_account_id', $request->bank_account_id))
             ->when($request->from_date, fn($q) => $q->whereDate('transaction_date', '>=', $request->from_date))
             ->when($request->to_date, fn($q) => $q->whereDate('transaction_date', '<=', $request->to_date))
             ->when($request->uncategorized, fn($q) => $q->uncategorized())
@@ -54,43 +65,6 @@ class TransactionController extends Controller
         return $this->successResponse(
             new TransactionResource($transaction),
             'Transaction fetched successfully'
-        );
-    }
-
-    /**
-     * GET /api/v1/transactions/search
-     * Search transactions by description, reference_no, amount
-     */
-    public function search(Request $request)
-    {
-        $query = $request->get('q', '');
-        $amount = $request->get('amount');
-        $type = $request->get('type');
-        $source = $request->get('source');
-        $from_date = $request->get('from_date');
-        $to_date = $request->get('to_date');
-
-        $transactions = Transaction::query()
-            ->where('user_id', $request->user()->id)
-            ->when($query, function ($q) use ($query) {
-                return $q->where(function ($subQuery) use ($query) {
-                    $subQuery->where('description', 'like', "%{$query}%")
-                        ->orWhere('reference_no', 'like', "%{$query}%")
-                        ->orWhereHas('category', fn($c) => $c->where('name', 'like', "%{$query}%"));
-                });
-            })
-            ->when($amount, fn($q) => $q->where('amount', $amount))
-            ->when($type, fn($q) => $q->where('type', $type))
-            ->when($source, fn($q) => $q->where('source', $source))
-            ->when($from_date, fn($q) => $q->whereDate('transaction_date', '>=', $from_date))
-            ->when($to_date, fn($q) => $q->whereDate('transaction_date', '<=', $to_date))
-            ->with(['category', 'business', 'bankAccount'])
-            ->latest('transaction_date')
-            ->paginate($request->per_page ?? 20);
-
-        return $this->paginatedResponse(
-            TransactionResource::collection($transactions)->response()->getData(),
-            'Search results'
         );
     }
 
