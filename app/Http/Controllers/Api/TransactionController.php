@@ -245,21 +245,39 @@ class TransactionController extends Controller
 
     /**
      * GET /api/v1/dashboard
-     * Get dashboard data with total balance, income, expense, net, and today's activity
-     * Optional: business_id (if provided, get data for that business, else for logged-in user)
+     * Get dashboard data for logged-in user (business_id == null)
+     * Returns: total balance, income, expense, net, and today's activity
      */
     public function dashboard(Request $request)
     {
-        $businessId = $request->get('business_id');
-
         $dashboardData = $this->transactionService->getDashboardData(
             $request->user(),
-            $businessId ? (int) $businessId : null
+            null
         );
 
         return $this->successResponse(
             $dashboardData,
             'Dashboard data fetched successfully'
+        );
+    }
+
+    /**
+     * GET /api/v1/transactions/dashboard/business
+     * Get dashboard data for logged-in user with business_id != null
+     * Returns: total balance, income, expense, net, and today's activity
+     * Only includes transactions that have a business associated
+     */
+    public function dashboardBusiness(Request $request)
+    {
+        $dashboardData = $this->transactionService->getDashboardData(
+            $request->user(),
+            null,
+            true
+        );
+
+        return $this->successResponse(
+            $dashboardData,
+            'Business dashboard data fetched successfully'
         );
     }
 }

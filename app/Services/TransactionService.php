@@ -54,16 +54,21 @@ class TransactionService
         ];
     }
 
-    public function getDashboardData(User $user, ?int $businessId = null): array
+    public function getDashboardData(User $user, ?int $businessId = null, bool $onlyWithBusiness = false): array
     {
         $query = Transaction::query();
 
-        // Filter by business_id if provided, otherwise by user_id
+        // Filter by user_id
+        $query->where('user_id', $user->id);
+
+        // Filter by specific business_id if provided
         if ($businessId) {
-            $query->where('business_id', $businessId)
-                  ->where('user_id', $user->id);
-        } else {
-            $query->where('user_id', $user->id);
+            $query->where('business_id', $businessId);
+        }
+
+        // If onlyWithBusiness is true, get only transactions with business_id != NULL
+        if ($onlyWithBusiness) {
+            $query->whereNotNull('business_id');
         }
 
         // Get total credit and debit
