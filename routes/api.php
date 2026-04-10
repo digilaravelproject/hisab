@@ -13,12 +13,14 @@ use App\Http\Controllers\Api\PublicContentController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\CacheController;
 use App\Http\Controllers\Api\BankAccountController;
+use App\Http\Controllers\Api\SetuWebhookController;
 /*
 |--------------------------------------------------------------------------
 | Public Routes (Authentication required nahin)
 |--------------------------------------------------------------------------
 */
 
+Route::post('/setu/webhook', [SetuWebhookController::class, 'handle']);
 Route::prefix('v1')->group(function () {
 
     // Auth
@@ -41,6 +43,11 @@ Route::prefix('v1')->group(function () {
     Route::post('contact-us',              [PublicContentController::class, 'contactUs']);
 
     Route::middleware('auth:sanctum')->group(function () {
+
+        Route::get('bank-accounts',        [BankAccountController::class, 'index']);
+        Route::post('bank-accounts',       [BankAccountController::class, 'store']);
+        Route::put('bank-accounts/{id}',   [BankAccountController::class, 'update']);
+        Route::delete('bank-accounts/{id}', [BankAccountController::class, 'destroy']);
 
         Route::get('profile',         [ProfileController::class, 'show']);
         Route::post('profile/update', [ProfileController::class, 'update']);

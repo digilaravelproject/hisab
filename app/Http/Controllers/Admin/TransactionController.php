@@ -54,7 +54,7 @@ class TransactionController extends Controller
             'transaction_date' => $validated['transaction_date'],
             'category_id'      => $validated['category_id'],
             'business_id'      => $validated['business_id'],
-            'bank_account_id'  => $validated['bank_account_id'],
+            'bank_account_id' => $request->input('bank_account_id', null),
             'reference_no'     => $validated['reference_no'],
             'description'      => $validated['description'],
             'is_categorized'   => ! is_null($validated['category_id']),

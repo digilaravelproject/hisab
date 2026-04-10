@@ -89,13 +89,19 @@ class ProfileController extends Controller
                 $data['profile_photo'] = $path;
             }
 
-            $user->update($data);
+            // ✅ Create user if not exists, otherwise update
+            if (! $user->exists) {
+                $user->fill($data)->save();
+            } else {
+                $user->update($data);
+            }
 
-            $settings = $user->settings()->firstOrCreate(
+            // ✅ Create settings if not exists, otherwise update
+            $settings = $user->settings()->updateOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'notifications_enabled' => false,
-                    'biometric_enabled'     => false,
+                    'notifications_enabled' => $user->settings?->notifications_enabled ?? false,
+                    'biometric_enabled'     => $user->settings?->biometric_enabled ?? false,
                 ]
             );
 
